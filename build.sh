@@ -1,0 +1,1 @@
+clang++.exe src/main.cpp src/engine/*.cpp -g -O3 -ffast-math  -w  -DSDL2 -lSDL2main -lSDL2 -lSDL2_Image -lSDL2_TTF -lSDL2_Mixer  -DSDL_MAIN_HANDLED   -o out/test.exe 
