@@ -2,9 +2,10 @@
 #define SDL
 #ifdef SDL
 #include "platform/sdl2.h"
+#include "modes.h"
 #endif
 #define GAME_GRAPHICS 1
-
+#include"term.h"
 
 extern bool accelerated;
 class Window;
@@ -13,13 +14,24 @@ class Window;
 typedef struct color {
 	unsigned char r,g,b,a;
 };
-
+extern color clearcolor;
 typedef struct buffer{
-	const short width,height;
+	short width,height;
 	char mode;
 	color*data;
-	buffer(int width, int height, char mode, color* data):width(width),height(height),mode(mode),data(data){};
+	buffer(int width, int height, char mode):width(width),height(height),mode(mode),data(
+		 (color*)malloc(width * height * sizeof(color))
+	){for (int i = 0; i < width * height; i++){
+		data[i] = {clearcolor.r,clearcolor.g,clearcolor.b,clearcolor.a};
+	}};
 	buffer():width(0),height(0),mode(0),data(0){};
+	~buffer(){free(data);};
+	void clear(){for (int i = 0; i < width * height; i++){
+		echo("clearing %i",i);
+		data[i] = {clearcolor.r,clearcolor.g,clearcolor.b,clearcolor.a};
+		
+		}};
+	
 };
 
 class Object{
@@ -36,42 +48,54 @@ class Object2D: public Object{
 		float x, y;	float roll;
 		buffer pixelbuffer;
 		Object2D(){};
-		Object2D(float x, float y):x(x),y(y),pixelbuffer(x,y,0, (color*)malloc(x*y * sizeof(color))){};
+		Object2D(float x, float y):x(x),y(y),pixelbuffer(x,y,0){};
 		void render(Window* window) {}
 };
-class world:public Object2D{
+class World:public Object2D{
 public:
 	color fog;
 	Object2D camera;
 	Object2D* stuff;
 
-	world(){};
+	World(){};
 	void render(Window* window) override;
 };
-#elif GAME_GRAPHICS >=1
+	#if GAME_GRAPHICS >=1
 
-class Object3D: public Object2D{
-	public:
-		float z;	float pitch, yaw;
-		Object3D(){};
-		Object3D(float x, float y,float z):Object2D(x,y){this->z = z;};
-		void render(Window* window) {}
-};
-class model:public Object3D{
-	public:
-		float *vertices;
-		int *faces[3];	
-		void render(Window* window) {}
-};
-class world3D:public Object3D{
-public:
-	color fog;
-	Object3D camera;
-	model* stuff;
+	class Object3D: public Object2D{
+		public:
+			float z;	float pitch, yaw;
+			Object3D(){};
+			Object3D(float x, float y,float z):Object2D(x,y){this->z = z;};
+			void render(Window* window) {}
+	};
+	struct vec3{
+		float x,y,z;
+		vec3(float x, float y, float z):x(x),y(y),z(z){};
+	};
+	struct Triangle{
+		vec3 a,b,c;
+		Triangle(vec3 a, vec3 b, vec3 c):a(a),b(b),c(c){};
+		Triangle():a(0,0,0),b(0,0,0),c(0,0,0){};
+		
+	};
 
-	world3D(){};
-	void render(Window* window) override;
-};
+	class model:public Object3D{
+		public:
+			float *vertices;
+			Triangle *faces[3];	
+			void render(Window* window) {}
+	};
+	class World3D:public Object3D{
+	public:
+		color fog;
+		Object3D camera;
+		model* stuff;
+
+		World3D(){};
+		void render(Window* window) override;
+	};
+	#endif
 #endif
 
 class Window {

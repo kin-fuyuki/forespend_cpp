@@ -6,6 +6,7 @@ Window::Window(int width, int height, const char* title) {INITWINDOW}
 Window::~Window() {CLOSEWINDOW}
 
 void Window::update() {
+	
 	INITDRAW
 	for (int i = 0; i < draws; i++) {
 		drawfuncs[i](objects[i], this);
@@ -15,7 +16,7 @@ void Window::update() {
 	draws = 0;
 	ENDDRAW
 }
-
+color clearcolor={254,0,0,0};
 void Window::bind(void (*func)(Object*,Window*), Object* obj) {
 	drawfuncs = (void(**)(Object*,Window*))realloc(drawfuncs, sizeof(void(*)(Object*)) * (draws + 1));
 	drawfuncs[draws] = func;
@@ -23,8 +24,5 @@ void Window::bind(void (*func)(Object*,Window*), Object* obj) {
 	objects[draws] = obj;
 	draws++;
 }
-void world::render(Window* window) {
-	
-	//keep at end
-	DRAWBUFFER
+void World::render(Window* window) {
 }

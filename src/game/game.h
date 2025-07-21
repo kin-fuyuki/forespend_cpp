@@ -1,4 +1,10 @@
+#pragma once
 #include"../engine/engine.h"
+#include"world/world.h"
+extern bool running;
+extern Window* window;
+extern map* world;
+
 void init();
 void loop();
 void update();
