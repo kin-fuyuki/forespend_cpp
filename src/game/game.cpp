@@ -3,13 +3,12 @@
 void init() {
 	startup("forespend","0.0f");
 	window = new Window(PERFECT_LOW, "forespend - 0.0f");
-	world = new map();
-	world->pixelbuffer = buffer(PERFECT_LOW, 0);
+	world = new map(PERFECT_LOW);
 }
 void loop() {
 	const char frametime=16;
 	
-	while (running)
+	while (window->eventupdate())
 	{
 		int start = SDL_GetTicks();
 		update();
@@ -20,27 +19,48 @@ void loop() {
 	}
 	
 }
+
 char currcolor = 0;
 void update() {
-	//clearcolor changing through hue, currcolor is 0=r 1=g 2=b
 	switch (currcolor) {
-		case 0:
-			if (++clearcolor.r > 255){ currcolor = 1; clearcolor.b=0; break; }
-			if (--clearcolor.b < 0){ clearcolor.b=0; }
-			break;
-		case 1:
-			if (++clearcolor.g > 255){ currcolor = 2; clearcolor.r=0; break; }
-			if (--clearcolor.r < 0){ clearcolor.r=0; }
-			break;
-		case 2:
-			if (++clearcolor.b > 255){ currcolor = 0; clearcolor.g=0; break; }
-			if (--clearcolor.g < 0){ clearcolor.g=0; }
-			break;
-	}
-	//success("clearcolor: %d %d %d",clearcolor.r,clearcolor.g,clearcolor.b);
+    case 0:
+        if (clearcolor.r < 255) {
+            clearcolor.r++;
+        }
+        if (clearcolor.b > 0) {
+            clearcolor.b--;
+        }
+        if (clearcolor.r == 255 && clearcolor.b == 0) {
+            currcolor = 1;
+        }
+        break;
+    case 1:
+        if (clearcolor.g < 255) {
+            clearcolor.g++;
+        }
+        if (clearcolor.r > 0) {
+            clearcolor.r--;
+        }
+        if (clearcolor.g == 255 && clearcolor.r == 0) {
+            currcolor = 2;
+        }
+        break;
+    case 2:
+        if (clearcolor.b < 255) {
+            clearcolor.b++;
+        }
+        if (clearcolor.g > 0) {
+            clearcolor.g--;
+        }
+        if (clearcolor.b == 255 && clearcolor.g == 0) {
+            currcolor = 0;
+        }
+        break;
+}
+
 }
 void draw() {
-	world->render(window);
+	window->bind(world->draw, world);
 	window->update();
 }
 void close() {

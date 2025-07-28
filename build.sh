@@ -3,25 +3,18 @@
 # for linux and mac:
 #./build.sh b l m r
 
+
+(
+clangflags=" -g -w -ffast-math -O3 "
+
 build() {
-	SDL2="-lSDL2main -lSDL2 -lSDL2_Image -lSDL2_TTF -lSDL2_Mixer  -DSDL_MAIN_HANDLED"
-	#bins full list
-	#BINS=("w32","nt32","nt64","nt7.32","nt7.64","nt1x.32","nt1x.64","linux5.32","linux5.64","bios","uefi")
-	SYSDEFINES="-DTARGET_RENDERER=0b00000100 -DTARGET_HARDWARE=0b00000001"
-	platforms=($(cat platforms.txt))
-	platformnames=($(cat platformnames.txt))
-	foldernames=($(cat foldernames.txt))
-	sources="src/main.cpp src/game/*.cpp src/engine/*.cpp src/game/world/*.cpp"
-	#iterate though both lists at once
-	for i in "${!platforms[@]}"; do
-		PLATFORM="${platforms[i]}"
-		PLATFORMNAME="${platformnames[i]}"
-		FOLDERNAME="${foldernames[i]}"
-		mkdir -p out/${FOLDERNAME}/bin
-		clang++.exe ${sources} -g -O0 -ffast-math -DTARGET_SYSTEM=${PLATFORM} ${SYSDEFINES} ${SDL2} -w -o out/${FOLDERNAME}/bin/${PLATFORMNAME}
-	done
+	"${l5_64[@]}" #linux 5.x+ 64 bit
+
 
 }
+
+
+
 r(){
 	
 	platformfolder=$1
@@ -60,6 +53,27 @@ sel() {
 	done
 	echo "${platforms[@]}" > platforms.txt
 }
+
+
+
+
+
+ ENGINENDPATH="/home/komi/src/cpp/libs/enginend_cpp"
+ SDL2="-lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer  -DSDL_MAIN_HANDLED -DSDL2"
+ FB0="-DFB0"
+ WIN32="32.exe -target i686-pc-windows-msvc -m32"
+ WIN64="64.exe -target x86_64-pc-windows-msvc -m64"
+ WXP="-D_WIN32_WINNT=0x0501 -o out/windows/bin/wxp."
+ W7P="-D_WIN32_WINNT=0x0601 -o out/windows/bin/w7."
+ W10P="-D_WIN32_WINNT=0x0A00 -o out/windows/bin/w1x."
+ LINUX32="32 -target i686-unknown-linux-gnu -m32"
+ LINUX64="64 -target x86_64-unknown-linux-gnu -m64"
+ L2="-D_GLIBCXX_USE_CXX11_ABI=0 -D__USE_MISC -D__USE_XOPEN2K8 -o out/linux/bin/l2."
+ L5="-o out/linux/bin/l5."
+ clang="clang++"
+ cfiles=$(find src ${ENGINENDPATH} -name "*.cpp")
+ incs="-I${ENGINENDPATH}/inc"
+ l5_64=($clang $incs $clangflags $cfiles $SDL2 $L5$LINUX64)
 ran=false
 built=false
 runplatform=""
@@ -128,3 +142,6 @@ for i in "$@"; do
 	
 done
 
+
+
+)
