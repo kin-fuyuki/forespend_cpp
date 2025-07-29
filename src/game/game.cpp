@@ -17,7 +17,7 @@ void loop() {
 		int wait = frametime - (end - start);
 		if (wait > 0) SDL_Delay(wait);
 	}
-	
+    
 }
 
 char currcolor = 0;
