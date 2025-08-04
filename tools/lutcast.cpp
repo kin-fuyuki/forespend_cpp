@@ -9,10 +9,10 @@ float abs(float x) {
 	return x > 0 ? x : -x;
 }
 float fastsin(float x) {
-    const float B = 4/pi;
-    const float C = -4/(pi*pi);
+	const float B = 4/pi;
+	const float C = -4/(pi*pi);
 
-    float y = B * x + C * x * abs(x);
+	float y = B * x + C * x * abs(x);
 	return y;
 }
 float fastcos(float x) {

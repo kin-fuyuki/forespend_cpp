@@ -41,9 +41,6 @@ r(){
 }
 sel() {
 	platforms=()
-	possibleplatforms=($(grep -oP '#define\s+SYSTEM_\w+' src/engine/platform/platforms.h | awk '{print $2}'))
-	platformvalues=($(grep -oP '#define\s+SYSTEM_\w+\s+0b[01]+' src/engine/platform/platforms.h | awk '{print $3}'))
-
 	for i in "${!possibleplatforms[@]}"; do
 		echo -n "use platform ${possibleplatforms[i]}? [y/n]: "
 		read -r choice
@@ -71,14 +68,15 @@ sel() {
  L2="-D_GLIBCXX_USE_CXX11_ABI=0 -D__USE_MISC -D__USE_XOPEN2K8 -o out/linux/bin/l2."
  L5="-o out/linux/bin/l5."
  clang="clang++"
- cfiles=$(find src ${ENGINENDPATH} -name "*.cpp")
+ cfiles=$(find src -name "*.cpp")
+ cfiles="$cfiles ${ENGINENDPATH}/cfiles/term.cpp"
  incs="-I${ENGINENDPATH}/inc"
  l5_64=($clang $incs $clangflags $cfiles $SDL2 $L5$LINUX64)
 ran=false
 built=false
 runplatform=""
 for i in "$@"; do
-    case "$i" in
+	case "$i" in
 		"w")
 			runplatform="windows"
 			;;
@@ -88,9 +86,9 @@ for i in "$@"; do
 		"m")
 			runplatform="mac"
 			;;
-	    "--list")
-            grep -oP '#define\s+SYSTEM_\w+\s+0b[01]+' src/engine/platform/platforms.h | awk '{print $2 " = " $3}'
-            ;;
+		"--list")
+			grep -oP '#define\s+SYSTEM_\w+\s+0b[01]+' src/engine/platform/platforms.h | awk '{print $2 " = " $3}'
+			;;
 		"b")
 			if $built; then
 				echo "already built"
@@ -126,7 +124,7 @@ for i in "$@"; do
 		"--help")
 			echo "usage: build.sh [options]"
 			echo "options:"
-			echo "  -h, --help     show this help message and exit"
+			echo "  -h, --help	 show this help message and exit"
 			echo "  b			   build the game"
 			echo "  r   		   run the game"
 			echo "  br			   build and run the game"

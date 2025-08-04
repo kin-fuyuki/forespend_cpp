@@ -1,13 +1,11 @@
 #include"game/game.h"
 
+map world;
+mainmenu menu;
 Window* window;
-map* world;
-
 int main(int argc, char* argv[]) {
-// main is only really useful to pass arguments
+	scene* current=&menu;
 	init();
-	loop();
 	close();
-
 	return 0;
 }
