@@ -2,12 +2,14 @@
 #include<vector>
 class scene{
 public:
-	virtual void init();
-	virtual void render();
-	virtual void update();
-	virtual void close();
+
+    virtual void init() {}
+    virtual void render() {}
+    virtual void update() {}
+    virtual void close() {}
 };
 struct tile{
+	char 	type;
 	short 	height;
 	bool 	hasbillboard;
 };
@@ -44,6 +46,8 @@ public:
 
 class mainmenu:public scene{
 public:
+	mainmenu();
+	~mainmenu();
 	void init()		override;
 	void update() 	override;
 	void render()	override;
