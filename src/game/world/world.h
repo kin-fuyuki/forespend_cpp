@@ -23,7 +23,7 @@ class map:public scene{
 	void updateChunks();
 
 public:
-
+	bool mustupdate;
 	map();
 	~map();
 	

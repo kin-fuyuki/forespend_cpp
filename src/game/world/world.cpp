@@ -3,8 +3,7 @@
 map::map(){
 	size=16;
 	tiles.resize(size*size);
-	updatechunks();
-	updatechunkmesh();
+	mustupdate=true;
 }
 map::~map(){}
 
@@ -13,7 +12,12 @@ void map::render(){
 	DrawMesh(mesh,LoadMaterialDefault(),Matrix{1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1});
 }
 void map::init(){}
-void map::update(){}
+void map::update(){
+if (mustupdate==true){
+	updatechunks();
+	updatechunkmesh();
+	mustupdate=false;}
+}
 void map::close(){}
 
 mainmenu::mainmenu(){}
