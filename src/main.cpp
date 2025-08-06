@@ -2,15 +2,18 @@
 
 map world;
 mainmenu menu;
-Window window;
 
 std::string NAME=		"forespend"				;
 std::string VERSION=	"0.01g"					;
-scene* current=&menu;
+std::string PATH=		"../"					;
+scene* current=&world;
 
 int main(int argc, char* argv[]) {
-	glutInit(&argc, argv);
 	init();
+	while (!WindowShouldClose()) {	
+	current->update();
+	render();
+	}
 	close();
 	return 0;
 }

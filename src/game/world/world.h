@@ -1,5 +1,7 @@
-#include"../gr.h"
+#include"../../config.h"
+#include<raylib.h>
 #include<vector>
+
 class scene{
 public:
 
@@ -8,11 +10,6 @@ public:
     virtual void update() {}
     virtual void close() {}
 };
-struct tile{
-	char 	type;
-	short 	height;
-	bool 	hasbillboard;
-};
 struct entity{
 	//4x4 quadrants
 	int 	qx,qz;
@@ -20,9 +17,9 @@ struct entity{
 	int 	id;
 };
 class map:public scene{
-	std::vector<tile> tiles;
-	std::vector<char> buildings;
-	std::vector<vec3> vertices;
+	std::vector<char>	tiles;
+	std::vector<char>	buildings;
+	Mesh				mesh;
 	void updateChunks();
 
 public:
@@ -33,7 +30,6 @@ public:
 	short	size;
 	short	world;
 	bool	paused;
-	
 	std::vector<entity> entities;
 	entity				player;
 	
@@ -41,7 +37,10 @@ public:
 	void update()	override;
 	void render()	override;
 	void close() 	override;
-	
+
+	void updatechunkmesh();
+
+	void updatechunks();
 };
 
 class mainmenu:public scene{

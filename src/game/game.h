@@ -3,7 +3,6 @@
 #include"io.h"
 extern bool 	running	;
 extern map 		world	;
-extern Window 	window	;
 extern scene* 	current	;
 extern short	updatems;
 void init();
