@@ -6,30 +6,21 @@ void init() {
 	
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
-	//start raylib window and stuff
+	current->init();
 }
 void close() {
+	current->close();
 	CloseWindow();
 }
-
-/*void keyboard(unsigned char key,int x,int y) {
-	echo ("key %i",key);
-	setkey(key,true);
-}
-void keyboardup(unsigned char key,int x,int y) {
-	setkey(key,false);
-}*/
 void mouse(int button,int state,int x,int y) {
 	
 }
 
-// measure time
 unsigned long now=0;
 unsigned long prv=0;
 unsigned long delta=0;
 short updatems=1;
 void timer(int value) {
-	//get cycles
 	now=__rdtsc();
 	delta=now-prv;
 	echo("delta %i",delta);
@@ -42,11 +33,10 @@ void render() {
 	updateclra();
 
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)
-		//pressed(4) && pressed(116)
 ){
 		current->close();
 		exit(0);}
-	
+		
 	BeginDrawing();
 	ClearBackground(clra);
 	current->render();

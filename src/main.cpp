@@ -1,3 +1,4 @@
+#define GRAPHICS_API_OPENGL_33
 #include"game/game.h"
 
 map world;

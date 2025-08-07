@@ -1,7 +1,8 @@
 #include"../../config.h"
 #include<raylib.h>
+#include <rlgl.h>
 #include<vector>
-
+#include<map>
 class scene{
 public:
 
@@ -14,31 +15,32 @@ struct entity{
 	//4x4 quadrants
 	int 	qx,qz;
 	float 	x,y,z;
+	float 	yaw,pitch,roll;
 	int 	id;
 };
 class map:public scene{
-	std::vector<char>	tiles;
-	std::vector<char>	buildings;
-	Mesh				mesh;
+	std::vector<unsigned char>	tiles;
+	Image tilemap;
+	std::vector<unsigned char>	buildings;
+	int							data[4];
 	void updateChunks();
 
 public:
-	bool mustupdate;
 	map();
 	~map();
 	
+	bool 	mustupdate;
 	short	size;
 	short	world;
 	bool	paused;
 	std::vector<entity> entities;
 	entity				player;
+	Camera3D			camera;
 	
 	void init()		override;
 	void update()	override;
 	void render()	override;
 	void close() 	override;
-
-	void updatechunkmesh();
 
 	void updatechunks();
 };
