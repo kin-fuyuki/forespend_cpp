@@ -36,10 +36,10 @@ void render() {
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)
 ){
 		close();}
-		
+	current->update();
 	BeginDrawing();
 	ClearBackground(clra);
-	//current->render();
+	current->render();
 	EndDrawing();
 	clearchanged();
 }

@@ -23,7 +23,6 @@ class map:public scene{
 	Image tilemap;
 	std::vector<unsigned char>	buildings;
 	int							data[4];
-	void updateChunks();
 
 public:
 	map();

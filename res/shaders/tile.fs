@@ -1,5 +1,4 @@
-#version 120 core
-in vec2 fragUV;
+#version 330
 
 void main(){
 	
