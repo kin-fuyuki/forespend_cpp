@@ -3,7 +3,7 @@
 
 void init() {
 	startup(CSTR(NAME),CSTR(VERSION));
-	
+	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	current->init();
@@ -11,6 +11,7 @@ void init() {
 void close() {
 	current->close();
 	CloseWindow();
+	cfg.save();
 }
 void mouse(int button,int state,int x,int y) {
 	
@@ -34,12 +35,11 @@ void render() {
 
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)
 ){
-		current->close();
-		exit(0);}
+		close();}
 		
 	BeginDrawing();
 	ClearBackground(clra);
-	current->render();
+	//current->render();
 	EndDrawing();
 	clearchanged();
 }
