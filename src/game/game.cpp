@@ -5,6 +5,7 @@ void init() {
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
+	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	current->init();
 }
