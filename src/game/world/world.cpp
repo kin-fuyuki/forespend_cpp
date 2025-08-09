@@ -156,11 +156,6 @@ void mainmenu::close(){}
 inline unsigned char gentile(int x,int z){
 	return x==0?255:1;
 }
-
-struct region{
-	unsigned short x,z;
-};
-void bakeworldmodel(std::vector<std::vector<region>> borderGroups[256]);
 void map::updatechunks() {
     std::vector<float> vertices;
     std::vector<float> texcoords;
