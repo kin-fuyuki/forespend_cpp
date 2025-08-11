@@ -243,7 +243,7 @@ Image tempImg = LoadImageFromTexture(target.texture);
 memcpy(tilaes, tempImg.data, size * size);
 UnloadImage(tempImg);
 UnloadRenderTexture(target);
-UnloadShader(tileGenShader);
+//UnloadShader(tileGenShader);
     
     std::vector<std::vector<Run>> runs;
     runs.resize(size);
