@@ -132,10 +132,7 @@ void map::render(){
 
 void map::update(){
 	if (mustupdate==true){
-		long start=__rdtsc();
 		updatechunks();
-		long end=__rdtsc();
-		error("cycles: %i",end-start);
 		mustupdate=false;
 	
 	}
@@ -184,8 +181,9 @@ void mainmenu::init(){}
 void mainmenu::update(){}
 void mainmenu::render(){}
 void mainmenu::close(){}
+#include "../../libs/simplex.h"
 inline unsigned char gentile(int x, int z) {
-    return tilaes[x + z * 1024];
+    return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
 }
 
 inline void tileuv(unsigned char tile, float &u0, float &v0, float &u1, float &v1) {
@@ -218,258 +216,81 @@ void map::updatechunks() {
     std::vector<unsigned short> indices;
 
     float tileSize = 4.0f;
-    unsigned int vertexCount = 0; 
+    unsigned int vertexCount = -1; 
 
     success("updating chunks");
-    delete[] static_cast<unsigned char*>(tilemap.data);
-    tilemap.data = new unsigned char[size * size];
+//    delete[] static_cast<unsigned char*>(tilemap.data);
+//    tilemap.data = new unsigned char[size * size];
 	
-	RenderTexture target = LoadRenderTexture(tilees.width, tilees.height);
-
-
-SetShaderValue(tileGenShader, GetShaderLocation(tileGenShader, "size"), &size, SHADER_UNIFORM_INT);
-
-
-BeginTextureMode(target);
-ClearBackground(BLACK);
-BeginShaderMode(tileGenShader);
-DrawRectangle(0, 0, tilees.width, tilees.height, WHITE);
-EndShaderMode();
-EndTextureMode();
+//	RenderTexture target = LoadRenderTexture(tilees.width, tilees.height);
 
 
 
-Image tempImg = LoadImageFromTexture(target.texture);
-memcpy(tilaes, tempImg.data, size * size);
-UnloadImage(tempImg);
-UnloadRenderTexture(target);
-//UnloadShader(tileGenShader);
-    
-    std::vector<std::vector<Run>> runs;
-    runs.resize(size);
-    for (unsigned short z = 0; z < size; ++z) {
-        runs[z].reserve(size / 4 + 4);
-        unsigned short x = 0;
-        while (x < size) {
-            unsigned char t = gentile(x, z);
-            unsigned short start = x;
-            ++x;
-            while (x < size && gentile(x, z) == t) ++x;
-            runs[z].push_back({ start, (unsigned short)(x - start), t });
-        }
-    }
-
-    
-    std::vector<Rect> prevRects; 
-    prevRects.reserve(size / 4 + 4);
-    std::vector<Rect> outRects; 
-    outRects.reserve(size * size / 16);
-
-    for (unsigned short z = 0; z < size; ++z) {
-        
-        
-        std::unordered_map<unsigned int, unsigned int> prevByX; 
-        prevByX.reserve(prevRects.size() * 2 + 4);
-        for (unsigned int i = 0; i < prevRects.size(); ++i) {
-            unsigned int key = ((unsigned int)prevRects[i].x << 16) | prevRects[i].width;
-            prevByX[key] = i;
-        }
-
-        std::vector<Rect> currRects;
-        currRects.reserve(runs[z].size());
-
-        
-        for (auto &r : runs[z]) {
-            unsigned int key = ((unsigned int)r.x << 16) | r.width;
-            auto it = prevByX.find(key);
-            if (it != prevByX.end()) {
-                Rect &cand = prevRects[it->second];
-                if (cand.tile == r.tile) {
-                    
-                    cand.height += 1;
-                    currRects.push_back(cand); 
-                    
-                    prevRects[it->second].tile = 0xFF; 
-                    continue;
-                }
-            }
-            
-            currRects.push_back({ r.x, z, r.width, 1, r.tile });
-        }
-
-        
-        for (auto &pr : prevRects) {
-            if (pr.tile != 0xFF) { 
-                outRects.push_back(pr);
-            }
-        }
-
-        
-        
-        
-        prevRects.swap(currRects);
-    }
-
-    
-    for (auto &pr : prevRects) {
-        if (pr.tile != 0xFF) outRects.push_back(pr);
-    }
-
-    
-    vertices.reserve(outRects.size() * 12); 
-    texcoords.reserve(outRects.size() * 8);
-    normals.reserve(outRects.size() * 12);
-    indices.reserve(outRects.size() * 6);
-
-    
-    for (auto &rec : outRects) {
-        float h = (rec.tile < 250) ? 1.0f : 0.0f;
-        float x0 = (float)rec.x * tileSize;
-        float x1 = (float)(rec.x + rec.width) * tileSize;
-        float z0 = (float)rec.z * tileSize;
-        float z1 = (float)(rec.z + rec.height) * tileSize;
-
-        
-        float tu0, tv0, tu1, tv1;
-        tileuv(rec.tile, tu0, tv0, tu1, tv1);
-        vertices.insert(vertices.end(), { x0, h, z0,  x1, h, z0,  x1, h, z1,  x0, h, z1 });
-        
-        texcoords.insert(texcoords.end(), { tu0, tv0,  tu1, tv0,  tu1, tv1,  tu0, tv1 });
-        for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { 0.0f, 1.0f, 0.0f });
-
-        
-        indices.push_back((unsigned short)(vertexCount + 0));
-        indices.push_back((unsigned short)(vertexCount + 2));
-        indices.push_back((unsigned short)(vertexCount + 1));
-        indices.push_back((unsigned short)(vertexCount + 0));
-        indices.push_back((unsigned short)(vertexCount + 3));
-        indices.push_back((unsigned short)(vertexCount + 2));
-        vertexCount += 4;
-
-        
-        
-        if (rec.z > 0) {
-            for (unsigned short xx = 0; xx < rec.width; ++xx) {
-                if (gentile(rec.x + xx, rec.z - 1) >= 250) {
-                    float wx0 = (rec.x + xx) * tileSize;
-                    float wx1 = (rec.x + xx + 1) * tileSize;
-                    float wz = rec.z * tileSize;
-                    tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                    vertices.insert(vertices.end(), { wx0, 0.0f, wz,  wx1, 0.0f, wz,  wx1, h, wz,  wx0, h, wz });
-                    texcoords.insert(texcoords.end(), { tu0, tv1,  tu1, tv1,  tu1, tv0,  tu0, tv0 });
-                    for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { 0.0f, 0.0f, -1.0f });
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 1));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 3));
-                    vertexCount += 4;
-                }
-            }
-        } else { 
-            for (unsigned short xx = 0; xx < rec.width; ++xx) {
-                float wx0 = (rec.x + xx) * tileSize;
-                float wx1 = (rec.x + xx + 1) * tileSize;
-                float wz = rec.z * tileSize;
-                tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                vertices.insert(vertices.end(), { wx0, 0.0f, wz,  wx1, 0.0f, wz,  wx1, h, wz,  wx0, h, wz });
-                texcoords.insert(texcoords.end(), { tu0, tv1,  tu1, tv1,  tu1, tv0,  tu0, tv0 });
-                for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { 0.0f, 0.0f, -1.0f });
-                indices.push_back((unsigned short)(vertexCount + 0));
-                indices.push_back((unsigned short)(vertexCount + 1));
-                indices.push_back((unsigned short)(vertexCount + 2));
-                indices.push_back((unsigned short)(vertexCount + 0));
-                indices.push_back((unsigned short)(vertexCount + 2));
-                indices.push_back((unsigned short)(vertexCount + 3));
-                vertexCount += 4;
-            }
-        }
-
-        
-        if (rec.z + rec.height < size) {
-            for (unsigned short xx = 0; xx < rec.width; ++xx) {
-                if (gentile(rec.x + xx, rec.z + rec.height) >= 250) {
-                    float wx0 = (rec.x + xx) * tileSize;
-                    float wx1 = (rec.x + xx + 1) * tileSize;
-                    float wz = (rec.z + rec.height) * tileSize;
-                    tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                    vertices.insert(vertices.end(), { wx0, 0.0f, wz,  wx0, h, wz,  wx1, h, wz,  wx1, 0.0f, wz });
-                    texcoords.insert(texcoords.end(), { tu0, tv1,  tu0, tv0,  tu1, tv0,  tu1, tv1 });
-                    for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { 0.0f, 0.0f, 1.0f });
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 1));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 3));
-                    vertexCount += 4;
-                }
-            }
-        }
-
-        
-        if (rec.x > 0) {
-            for (unsigned short zz = 0; zz < rec.height; ++zz) {
-                if (gentile(rec.x - 1, rec.z + zz) >= 250) {
-                    float wz0 = (rec.z + zz) * tileSize;
-                    float wz1 = (rec.z + zz + 1) * tileSize;
-                    float wx = rec.x * tileSize;
-                    tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                    vertices.insert(vertices.end(), { wx, 0.0f, wz0,  wx, 0.0f, wz1,  wx, h, wz1,  wx, h, wz0 });
-                    texcoords.insert(texcoords.end(), { tu0, tv1,  tu1, tv1,  tu1, tv0,  tu0, tv0 });
-                    for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { -1.0f, 0.0f, 0.0f });
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 1));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 3));
-                    vertexCount += 4;
-                }
-            }
-        } else { 
-            for (unsigned short zz = 0; zz < rec.height; ++zz) {
-                float wz0 = (rec.z + zz) * tileSize;
-                float wz1 = (rec.z + zz + 1) * tileSize;
-                float wx = rec.x * tileSize;
-                tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                vertices.insert(vertices.end(), { wx, 0.0f, wz0,  wx, 0.0f, wz1,  wx, h, wz1,  wx, h, wz0 });
-                texcoords.insert(texcoords.end(), { tu0, tv1,  tu1, tv1,  tu1, tv0,  tu0, tv0 });
-                for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { -1.0f, 0.0f, 0.0f });
-                indices.push_back((unsigned short)(vertexCount + 0));
-                indices.push_back((unsigned short)(vertexCount + 1));
-                indices.push_back((unsigned short)(vertexCount + 2));
-                indices.push_back((unsigned short)(vertexCount + 0));
-                indices.push_back((unsigned short)(vertexCount + 2));
-                indices.push_back((unsigned short)(vertexCount + 3));
-                vertexCount += 4;
-            }
-        }
-
-        
-        if (rec.x + rec.width < size) {
-            for (unsigned short zz = 0; zz < rec.height; ++zz) {
-                if (gentile(rec.x + rec.width, rec.z + zz) >= 250) {
-                    float wz0 = (rec.z + zz) * tileSize;
-                    float wz1 = (rec.z + zz + 1) * tileSize;
-                    float wx = (rec.x + rec.width) * tileSize;
-                    tileuv(rec.tile, tu0, tv0, tu1, tv1);
-                    vertices.insert(vertices.end(), { wx, 0.0f, wz0,  wx, h, wz0,  wx, h, wz1,  wx, 0.0f, wz1 });
-                    texcoords.insert(texcoords.end(), { tu0, tv1,  tu0, tv0,  tu1, tv0,  tu1, tv1 });
-                    for (int i = 0; i < 4; ++i) normals.insert(normals.end(), { 1.0f, 0.0f, 0.0f });
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 1));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 0));
-                    indices.push_back((unsigned short)(vertexCount + 2));
-                    indices.push_back((unsigned short)(vertexCount + 3));
-                    vertexCount += 4;
-                }
-            }
-        }
-    }
-
+	long start=__rdtsc();
+	unsigned char prev=gentile(0,0);
+	unsigned char tile = gentile(0, 0);
+	bool liquid=tile>=250;
+// !liquid: vertexCount-7 , liquid: vertexCount-3
+vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(0.0f);
+// !liquid: vertexCount-6 , liquid: vertexCount-2
+vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(1.0f);
+vertexCount += 2;
+if (!liquid) {
+// !liquid: vertexCount-5
+vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(0.0f);
+// !liquid: vertexCount-4
+vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(1.0f);
+vertexCount += 2;
+}
+	for (int z = 0; z < size; z++) {
+		for (int x = 0; x < size; x++) {
+			tile = gentile(0, 0);
+			liquid=tile>=250;
+			//end of strip
+			if (tile != prev) {
+// !liquid: vertexCount-3 , liquid: vertexCount-1
+vertices.push_back((x+1)*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
+// !liquid: vertexCount-2 , liquid: vertexCount
+vertices.push_back((x+1)*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
+vertexCount += 2;
+if (!liquid) {
+// !liquid: vertexCount-1
+vertices.push_back((x+1)*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
+// !liquid: vertexCount
+vertices.push_back((x+1)*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
+vertexCount += 2;
+}
+			//indices
+			if (liquid) {
+				// up triangle 1
+				indices.push_back((unsigned short)(vertexCount - 3));
+				indices.push_back((unsigned short)(vertexCount - 1));
+				indices.push_back((unsigned short)(vertexCount - 2));
+				// up triangle 2
+				indices.push_back((unsigned short)(vertexCount - 2));
+				indices.push_back((unsigned short)(vertexCount));
+				indices.push_back((unsigned short)(vertexCount - 1));
+			}else{
+				// up triangle 1
+				indices.push_back((unsigned short)(vertexCount - 5));
+				indices.push_back((unsigned short)(vertexCount - 1));
+				indices.push_back((unsigned short)(vertexCount - 4));
+				// up triangle 2
+				indices.push_back((unsigned short)(vertexCount - 4));
+				indices.push_back((unsigned short)(vertexCount));
+				indices.push_back((unsigned short)(vertexCount - 1));
+				// sides
+			}
+			}
+			
+			prev = tile;
+		}
+	}
+	long end=__rdtsc();
+	error("generation cycles: %i",end-start);
+	
+	
+	
     mustupdate = false;
     if (tilemat.maps[0].texture.id > 0) UnloadTexture(tilemat.maps[0].texture);
     tilemat.maps[0].texture = LoadTextureFromImage(tilemap);
@@ -492,6 +313,8 @@ UnloadRenderTexture(target);
     memcpy(worldmodel.normals, normals.data(), normals.size() * sizeof(float));
     memcpy(worldmodel.indices, indices.data(), indices.size() * sizeof(unsigned short));
 
+		end=__rdtsc();
+		error("mesh assignment cycles: %i",end-start);
     UploadMesh(&worldmodel, false);
     error("optimized vertices: %u", vertexCount);
 }
