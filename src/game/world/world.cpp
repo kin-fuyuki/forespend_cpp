@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <stack>
 #include <unordered_map>
-Mesh worldmodel;
+Model worldmodel;
 Image tilees={0,0,0,0};
 Material generator;
 unsigned char* tilaes;
@@ -121,8 +121,7 @@ map::~map(){
 }
 void map::render(){
 	BeginMode3D(camera);
-	DrawMesh(worldmodel,
-	tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
+	DrawModel(worldmodel,(Vector3){0,0,0},1.0f,WHITE);
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
 	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
@@ -181,140 +180,206 @@ void mainmenu::init(){}
 void mainmenu::update(){}
 void mainmenu::render(){}
 void mainmenu::close(){}
-#include "../../libs/simplex.h"
-inline unsigned char gentile(int x, int z) {
-    return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
-}
-
-inline void tileuv(unsigned char tile, float &u0, float &v0, float &u1, float &v1) {
-    int tx = tile % 16;
-    int ty = tile / 16;
-    u0 = tx * (1.0f / 16.0f);
-    v0 = ty * (1.0f / 16.0f);
-    u1 = u0 + (1.0f / 16.0f);
-    v1 = v0 + (1.0f / 16.0f);
-}
-
-struct Run {
-    unsigned short x;
-    unsigned short width;
-    unsigned char tile;
-};
-struct Rect {
-    unsigned short x;
-    unsigned short z;
-    unsigned short width;
-    unsigned short height;
-    unsigned char tile;
-};
 
 Shader tileGenShader = LoadShader(0, "res/shaders/tilegen.fs");
-void map::updatechunks() {
-    std::vector<float> vertices;
-    std::vector<float> texcoords;
-    std::vector<float> normals;
-    std::vector<unsigned short> indices;
+#include "../../libs/simplex.h"
+inline unsigned char gentile(int x, int z) {
+    //return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
+	return (x%32==0);
+}
 
-    float tileSize = 4.0f;
-    unsigned int vertexCount = -1; 
+void map::updatechunks() {
+
+    float tileSize = 1.0f;
+    unsigned int vertexCount = 0;
 
     success("updating chunks");
-//    delete[] static_cast<unsigned char*>(tilemap.data);
-//    tilemap.data = new unsigned char[size * size];
-	
-//	RenderTexture target = LoadRenderTexture(tilees.width, tilees.height);
 
-
-
-	long start=__rdtsc();
-	unsigned char prev=gentile(0,0);
-	unsigned char tile = gentile(0, 0);
-	bool liquid=tile>=250;
-// !liquid: vertexCount-7 , liquid: vertexCount-3
-vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(0.0f);
-// !liquid: vertexCount-6 , liquid: vertexCount-2
-vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(1.0f);
-vertexCount += 2;
-if (!liquid) {
-// !liquid: vertexCount-5
-vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(0.0f);
-// !liquid: vertexCount-4
-vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(1.0f);
-vertexCount += 2;
-}
-	for (int z = 0; z < size; z++) {
-		for (int x = 0; x < size; x++) {
-			tile = gentile(0, 0);
-			liquid=tile>=250;
-			//end of strip
-			if (tile != prev) {
-// !liquid: vertexCount-3 , liquid: vertexCount-1
-vertices.push_back((x+1)*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
-// !liquid: vertexCount-2 , liquid: vertexCount
-vertices.push_back((x+1)*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
-vertexCount += 2;
-if (!liquid) {
-// !liquid: vertexCount-1
-vertices.push_back((x+1)*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
-// !liquid: vertexCount
-vertices.push_back((x+1)*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
-vertexCount += 2;
-}
-			//indices
-			if (liquid) {
-				// up triangle 1
-				indices.push_back((unsigned short)(vertexCount - 3));
-				indices.push_back((unsigned short)(vertexCount - 1));
-				indices.push_back((unsigned short)(vertexCount - 2));
-				// up triangle 2
-				indices.push_back((unsigned short)(vertexCount - 2));
-				indices.push_back((unsigned short)(vertexCount));
-				indices.push_back((unsigned short)(vertexCount - 1));
-			}else{
-				// up triangle 1
-				indices.push_back((unsigned short)(vertexCount - 5));
-				indices.push_back((unsigned short)(vertexCount - 1));
-				indices.push_back((unsigned short)(vertexCount - 4));
-				// up triangle 2
-				indices.push_back((unsigned short)(vertexCount - 4));
-				indices.push_back((unsigned short)(vertexCount));
-				indices.push_back((unsigned short)(vertexCount - 1));
-				// sides
-			}
+    long start=__rdtsc();
+	int chunks=size/64;
+	int chunkssizeof=(sizeof(Mesh)*chunks);
+	worldmodel.meshes=(Mesh*)RL_MALLOC(chunkssizeof*chunkssizeof);
+	for (int cx = 0; cx < chunks; cx++) {
+		for (int cz = 0; cz < chunks; cz++) {
+		int chunkindex=cx*chunks+cz;
+		std::vector<float> vertices;
+		std::vector<float> texcoords;
+		std::vector<float> normals;
+		std::vector<unsigned short> indices;
+		
+		for (int z = 0; z < 64; z++) {
+			unsigned char prev = gentile(0, z);
+			bool liquid = prev >= 250;
+			
+			// Start of strip - add first vertices
+			vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
+			vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
+			texcoords.push_back(0.0f);texcoords.push_back(0.0f);
+			texcoords.push_back(0.0f);texcoords.push_back(1.0f);
+			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+			
+			if (!liquid) {
+				vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
+				vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
+				texcoords.push_back(0.0f);texcoords.push_back(0.0f);
+				texcoords.push_back(0.0f);texcoords.push_back(1.0f);
+				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+				vertexCount += 4;
+			} else {
+				vertexCount += 2;
 			}
 			
-			prev = tile;
+			for (int x = 1; x < 64; x++) {
+				unsigned char tile = gentile(x, z);
+				bool currentLiquid = tile >= 250;
+				
+				if (tile != prev || currentLiquid != liquid) {
+					// End current strip
+					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
+					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
+					texcoords.push_back(1.0f);texcoords.push_back(0.0f);
+					texcoords.push_back(1.0f);texcoords.push_back(1.0f);
+					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+					
+					if (!liquid) {
+						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
+						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
+						texcoords.push_back(1.0f);texcoords.push_back(0.0f);
+						texcoords.push_back(1.0f);texcoords.push_back(1.0f);
+						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+					}
+					
+					// Generate indices for previous strip
+					if (liquid) {
+						indices.push_back((unsigned short)(vertexCount - 2));
+						indices.push_back((unsigned short)(vertexCount));
+						indices.push_back((unsigned short)(vertexCount - 1));
+						
+						indices.push_back((unsigned short)(vertexCount - 1));
+						indices.push_back((unsigned short)(vertexCount));
+						indices.push_back((unsigned short)(vertexCount + 1));
+						vertexCount += 2;
+					} else {
+						indices.push_back((unsigned short)(vertexCount - 4));
+						indices.push_back((unsigned short)(vertexCount));
+						indices.push_back((unsigned short)(vertexCount - 2));
+						
+						indices.push_back((unsigned short)(vertexCount - 2));
+						indices.push_back((unsigned short)(vertexCount));
+						indices.push_back((unsigned short)(vertexCount + 2));
+						
+						indices.push_back((unsigned short)(vertexCount - 3));
+						indices.push_back((unsigned short)(vertexCount - 1));
+						indices.push_back((unsigned short)(vertexCount + 1));
+						
+						indices.push_back((unsigned short)(vertexCount - 1));
+						indices.push_back((unsigned short)(vertexCount + 1));
+						indices.push_back((unsigned short)(vertexCount + 3));
+						vertexCount += 4;
+					}
+					
+					// Start new strip
+					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
+					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
+					texcoords.push_back(0.0f);texcoords.push_back(0.0f);
+					texcoords.push_back(0.0f);texcoords.push_back(1.0f);
+					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+					
+					if (!currentLiquid) {
+						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
+						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
+						texcoords.push_back(0.0f);texcoords.push_back(0.0f);
+						texcoords.push_back(0.0f);texcoords.push_back(1.0f);
+						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+						vertexCount += 4;
+					} else {
+						vertexCount += 2;
+					}
+					
+					liquid = currentLiquid;
+				}
+				prev = tile;
+			}
+			
+			// End final strip for this row
+			vertices.push_back(size*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
+			vertices.push_back(size*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
+			texcoords.push_back(1.0f);texcoords.push_back(0.0f);
+			texcoords.push_back(1.0f);texcoords.push_back(1.0f);
+			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+			
+			if (!liquid) {
+				vertices.push_back(size*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
+				vertices.push_back(size*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
+				texcoords.push_back(1.0f);texcoords.push_back(0.0f);
+				texcoords.push_back(1.0f);texcoords.push_back(1.0f);
+				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
+			}
+			
+			// Final indices for this row
+			if (liquid) {
+				indices.push_back((unsigned short)(vertexCount - 2));
+				indices.push_back((unsigned short)vertexCount);
+				indices.push_back((unsigned short)(vertexCount - 1));
+				
+				indices.push_back((unsigned short)(vertexCount - 1));
+				indices.push_back((unsigned short)vertexCount);
+				indices.push_back((unsigned short)(vertexCount + 1));
+				vertexCount += 2;
+			} else {
+				indices.push_back((unsigned short)(vertexCount - 4));
+				indices.push_back((unsigned short)vertexCount);
+				indices.push_back((unsigned short)(vertexCount - 2));
+				
+				indices.push_back((unsigned short)(vertexCount - 2));
+				indices.push_back((unsigned short)vertexCount);
+				indices.push_back((unsigned short)(vertexCount + 2));
+				
+				indices.push_back((unsigned short)(vertexCount - 3));
+				indices.push_back((unsigned short)(vertexCount - 1));
+				indices.push_back((unsigned short)(vertexCount + 1));
+				
+				indices.push_back((unsigned short)(vertexCount - 1));
+				indices.push_back((unsigned short)(vertexCount + 1));
+				indices.push_back((unsigned short)(vertexCount + 3));
+				vertexCount += 4;
+			}
 		}
-	}
-	long end=__rdtsc();
-	error("generation cycles: %i",end-start);
-	
-	
-	
-    mustupdate = false;
-    if (tilemat.maps[0].texture.id > 0) UnloadTexture(tilemat.maps[0].texture);
-    tilemat.maps[0].texture = LoadTextureFromImage(tilemap);
+		
+		long end=__rdtsc();
+		error("generation cycles: %i",end-start);
+		
+		mustupdate = false;
+		if (tilemat.maps[0].texture.id > 0) UnloadTexture(tilemat.maps[0].texture);
+		tilemat.maps[0].texture = LoadTextureFromImage(tilemap);
 
-    
-    if (worldmodel.vertices) RL_FREE(worldmodel.vertices);
-    if (worldmodel.texcoords) RL_FREE(worldmodel.texcoords);
-    if (worldmodel.normals) RL_FREE(worldmodel.normals);
-    if (worldmodel.indices) RL_FREE(worldmodel.indices);
+		if (worldmodel.meshes[chunkindex].vertices) RL_FREE(worldmodel.meshes[chunkindex].vertices);
+		if (worldmodel.meshes[chunkindex].texcoords) RL_FREE(worldmodel.meshes[chunkindex].texcoords);
+		if (worldmodel.meshes[chunkindex].normals) RL_FREE(worldmodel.meshes[chunkindex].normals);
+		if (worldmodel.meshes[chunkindex].indices) RL_FREE(worldmodel.meshes[chunkindex].indices);
 
-    worldmodel.vertexCount = (int)(vertices.size() / 3);
-    worldmodel.triangleCount = (int)(indices.size() / 3);
-    worldmodel.vertices = (float*)RL_MALLOC(vertices.size() * sizeof(float));
-    worldmodel.texcoords = (float*)RL_MALLOC(texcoords.size() * sizeof(float));
-    worldmodel.normals = (float*)RL_MALLOC(normals.size() * sizeof(float));
-    worldmodel.indices = (unsigned short*)RL_MALLOC(indices.size() * sizeof(unsigned short));
+		worldmodel.meshes[chunkindex].vertexCount = (int)(vertices.size() / 3);
+		worldmodel.meshes[chunkindex].triangleCount = (int)(indices.size() / 3);
+		worldmodel.meshes[chunkindex].vertices = (float*)RL_MALLOC(vertices.size() * sizeof(float));
+		worldmodel.meshes[chunkindex].texcoords = (float*)RL_MALLOC(texcoords.size() * sizeof(float));
+		worldmodel.meshes[chunkindex].normals = (float*)RL_MALLOC(normals.size() * sizeof(float));
+		worldmodel.meshes[chunkindex].indices = (unsigned short*)RL_MALLOC(indices.size() * sizeof(unsigned short));
 
-    memcpy(worldmodel.vertices, vertices.data(), vertices.size() * sizeof(float));
-    memcpy(worldmodel.texcoords, texcoords.data(), texcoords.size() * sizeof(float));
-    memcpy(worldmodel.normals, normals.data(), normals.size() * sizeof(float));
-    memcpy(worldmodel.indices, indices.data(), indices.size() * sizeof(unsigned short));
-
-		end=__rdtsc();
-		error("mesh assignment cycles: %i",end-start);
-    UploadMesh(&worldmodel, false);
-    error("optimized vertices: %u", vertexCount);
+		memcpy(worldmodel.meshes[chunkindex].vertices, vertices.data(), vertices.size() * sizeof(float));
+		memcpy(worldmodel.meshes[chunkindex].texcoords, texcoords.data(), texcoords.size() * sizeof(float));
+		memcpy(worldmodel.meshes[chunkindex].normals, normals.data(), normals.size() * sizeof(float));
+		memcpy(worldmodel.meshes[chunkindex].indices, indices.data(), indices.size() * sizeof(unsigned short));
+		
+	    UploadMesh(&worldmodel.meshes[chunkindex], false);
+	}}
+    long end=__rdtsc();
+    error("mesh assignment cycles: %lli",end-start);
 }
