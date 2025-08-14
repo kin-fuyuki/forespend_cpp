@@ -187,7 +187,7 @@ inline unsigned char gentile(int x, int z) {
     //return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
 	return (x%32==0);
 }
-
+/*
 void map::updatechunks() {
 
     float tileSize = 1.0f;
@@ -382,4 +382,85 @@ void map::updatechunks() {
 	}}
     long end=__rdtsc();
     error("mesh assignment cycles: %lli",end-start);
+}*/
+
+// new code i made when on market
+map::updatechunks(){
+	int chunks=size/64;
+	int totalchunks=(size/64)*(size/64);
+
+	for (int cz=0;cz<chunks;cz++) for (int cx=0;cx<chunks;cx++){
+		std::vector<float> normals;
+		std::vector<float> vertices;
+		std::vector<short> indices;
+		unsigned short vertexes=0;
+		for (int z=0;z<64;z++){
+			int zidx=(cz<<6)+z;
+			unsigned char prevtile=gentile((cx<<6),zidx);
+			bool terrain=prevtile<250;
+// add vertices
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx); // terrain: idx-7		!terrain: idx-3
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx+1); // terrain: idx-6	!terrain: idx-2
+			vertexes+=2;
+if (terrain){
+vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx); // terrain: idx-5
+vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx+1); // terrain: idx-4
+			vertexes+=2;
+}
+			for (int x=0;x>64;x++){
+				int xidx=(cx<<6)+x
+				unsigned char tile=gentile(xidx,zidx);
+				if (tile!=prevtile){
+// add vertices
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx); // terrain: idx-3		!terrain: idx-1
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx+1); // terrain: idx-2	!terrain: idx
+			vertexes+=2;
+if (terrain){
+vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx); // terrain: idx-1		
+vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx+1); // terrain: idx		
+			vertexes+=2;
+}
+
+// add indices
+if (terrain){
+	// top
+indices.push_back( vertexes-5 ); indices.push_back( vertexes-4 ); indices.push_back( vertexes-1	); 
+indices.push_back( vertexes-4 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	); 
+
+
+	// x+
+indices.push_back( vertexes-3 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-1	);
+indices.push_back( vertexes-2 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	);
+
+	// x-
+indices.push_back( vertexes-7 ); indices.push_back( vertexes-6 ); indices.push_back( vertexes-5	);
+indices.push_back( vertexes-6 ); indices.push_back( vertexes-5 ); indices.push_back( vertexes-4	);
+
+	// y+
+indices.push_back( vertexes-6 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-4	);
+indices.push_back( vertexes-4 ); indices.push_back( vertexes   ); indices.push_back( vertexes-6	);
+
+	// y-
+indices.push_back( vertexes-7 ); indices.push_back( vertexes-3 ); indices.push_back( vertexes-1	);
+indices.push_back( vertexes-5 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes-3	);
+
+}else{
+	// top
+indices.push_back( vertexes-3 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-1	); 
+indices.push_back( vertexes-2 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	);
+}
+
+// add vertices
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
+			vertexes+=2;
+if (terrain){
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
+vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
+			vertexes+=2;
+}				}
+				prevtile=tile;
+			}
+		}
+	}
 }
