@@ -33,3 +33,4 @@ void setkey(unsigned char k,bool state);
 bool pressed(unsigned char k);
 bool justchanged(unsigned char k);
 void clearchanged();
+void savebmp(const char* filename, unsigned char* data, int width, int height);
