@@ -6,6 +6,7 @@ void init() {
 	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	//set opengl version
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	current->init();
 }

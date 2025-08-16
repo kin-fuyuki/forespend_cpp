@@ -1,5 +1,7 @@
 #include "world.h"
 #include "../../term.h"
+#include "../../libs/simplex.h"
+#include <raymath.h>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
@@ -7,12 +9,12 @@
 #include <cstdint>
 #include <stack>
 #include <unordered_map>
-Mesh* worldmodel;
+#define MAX_MATERIAL_MAPS              12
+Meshw worldmodel;
 Image tilees={0,0,0,0};
 Material generator;
 unsigned char* tilaes;
 
-Matrix *m;
 map::map(){
 	size=1024; 
 	tiles.resize(size*size);
@@ -28,15 +30,6 @@ map::map(){
 	data[0]=0;
 	data[1]=0;
 	data[2]=0;
-	m=new Matrix[size*size];
-	for (int x=0;x<size;x++) for (int z=0;z<size;z++){
-		m[x+z*size]=Matrix{
-			1.0f,0.0f,0.0f,0.0f,
-			0.0f,1.0f,0.0f,0.0f,
-			0.0f,0.0f,1.0f,0.0f,
-			(float)x*4.0f,(float)z*4.0f,0.0f,1.0f
-		};
-	};
 }
 Material tilemat;
 void map::init(){
@@ -48,14 +41,13 @@ void map::init(){
 
 	tilemat=LoadMaterialDefault();
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
-	
 }
 
 map::~map(){
 }
 void map::render(){
 	BeginMode3D(camera);
-	DrawModel(worldmodel,(Vector3){0,0,0},1.0f,WHITE);
+	drawgl33mesh(worldmodel,tilemat,(Matrix){1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1});
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
 	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
@@ -116,285 +108,386 @@ void mainmenu::render(){}
 void mainmenu::close(){}
 
 Shader tileGenShader = LoadShader(0, "res/shaders/tilegen.fs");
-#include "../../libs/simplex.h"
 inline unsigned char gentile(int x, int z) {
     //return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
 	return (x%32==0);
 }
-/*
-void map::updatechunks() {
+#define addvert(x,y,z) worldmodel.vertices[vertexes++]=x; worldmodel.vertices[vertexes++]=y; worldmodel.vertices[vertexes++]=z
+#define addidx(i1,i2,i3) worldmodel.indices[indices++]=i1; worldmodel.indices[indices++]=i2; worldmodel.indices[indices++]=i3
 
-    float tileSize = 1.0f;
-    unsigned int vertexCount = 0;
-
-    success("updating chunks");
-
-    long start=__rdtsc();
-	int chunks=size/64;
-	int chunkssizeof=(sizeof(Mesh)*chunks);
-	worldmodel.meshes=(Mesh*)RL_MALLOC(chunkssizeof*chunkssizeof);
-	for (int cx = 0; cx < chunks; cx++) {
-		for (int cz = 0; cz < chunks; cz++) {
-		int chunkindex=cx*chunks+cz;
-		std::vector<float> vertices;
-		std::vector<float> texcoords;
-		std::vector<float> normals;
-		std::vector<unsigned short> indices;
-		
-		for (int z = 0; z < 64; z++) {
-			unsigned char prev = gentile(0, z);
-			bool liquid = prev >= 250;
-			
-			// Start of strip - add first vertices
-			vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
-			vertices.push_back(0.0f);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
-			texcoords.push_back(0.0f);texcoords.push_back(0.0f);
-			texcoords.push_back(0.0f);texcoords.push_back(1.0f);
-			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-			
-			if (!liquid) {
-				vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
-				vertices.push_back(0.0f);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
-				texcoords.push_back(0.0f);texcoords.push_back(0.0f);
-				texcoords.push_back(0.0f);texcoords.push_back(1.0f);
-				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-				vertexCount += 4;
-			} else {
-				vertexCount += 2;
-			}
-			
-			for (int x = 1; x < 64; x++) {
-				unsigned char tile = gentile(x, z);
-				bool currentLiquid = tile >= 250;
-				
-				if (tile != prev || currentLiquid != liquid) {
-					// End current strip
-					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
-					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
-					texcoords.push_back(1.0f);texcoords.push_back(0.0f);
-					texcoords.push_back(1.0f);texcoords.push_back(1.0f);
-					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-					
-					if (!liquid) {
-						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
-						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
-						texcoords.push_back(1.0f);texcoords.push_back(0.0f);
-						texcoords.push_back(1.0f);texcoords.push_back(1.0f);
-						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-					}
-					
-					// Generate indices for previous strip
-					if (liquid) {
-						indices.push_back((unsigned short)(vertexCount - 2));
-						indices.push_back((unsigned short)(vertexCount));
-						indices.push_back((unsigned short)(vertexCount - 1));
-						
-						indices.push_back((unsigned short)(vertexCount - 1));
-						indices.push_back((unsigned short)(vertexCount));
-						indices.push_back((unsigned short)(vertexCount + 1));
-						vertexCount += 2;
-					} else {
-						indices.push_back((unsigned short)(vertexCount - 4));
-						indices.push_back((unsigned short)(vertexCount));
-						indices.push_back((unsigned short)(vertexCount - 2));
-						
-						indices.push_back((unsigned short)(vertexCount - 2));
-						indices.push_back((unsigned short)(vertexCount));
-						indices.push_back((unsigned short)(vertexCount + 2));
-						
-						indices.push_back((unsigned short)(vertexCount - 3));
-						indices.push_back((unsigned short)(vertexCount - 1));
-						indices.push_back((unsigned short)(vertexCount + 1));
-						
-						indices.push_back((unsigned short)(vertexCount - 1));
-						indices.push_back((unsigned short)(vertexCount + 1));
-						indices.push_back((unsigned short)(vertexCount + 3));
-						vertexCount += 4;
-					}
-					
-					// Start new strip
-					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
-					vertices.push_back(x*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
-					texcoords.push_back(0.0f);texcoords.push_back(0.0f);
-					texcoords.push_back(0.0f);texcoords.push_back(1.0f);
-					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-					normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-					
-					if (!currentLiquid) {
-						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
-						vertices.push_back(x*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
-						texcoords.push_back(0.0f);texcoords.push_back(0.0f);
-						texcoords.push_back(0.0f);texcoords.push_back(1.0f);
-						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-						normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-						vertexCount += 4;
-					} else {
-						vertexCount += 2;
-					}
-					
-					liquid = currentLiquid;
-				}
-				prev = tile;
-			}
-			
-			// End final strip for this row
-			vertices.push_back(size*tileSize);vertices.push_back(0.0f);vertices.push_back(z*tileSize);
-			vertices.push_back(size*tileSize);vertices.push_back(0.0f);vertices.push_back((z+1)*tileSize);
-			texcoords.push_back(1.0f);texcoords.push_back(0.0f);
-			texcoords.push_back(1.0f);texcoords.push_back(1.0f);
-			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-			normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-			
-			if (!liquid) {
-				vertices.push_back(size*tileSize);vertices.push_back(1.0f);vertices.push_back(z*tileSize);
-				vertices.push_back(size*tileSize);vertices.push_back(1.0f);vertices.push_back((z+1)*tileSize);
-				texcoords.push_back(1.0f);texcoords.push_back(0.0f);
-				texcoords.push_back(1.0f);texcoords.push_back(1.0f);
-				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-				normals.push_back(0.0f);normals.push_back(1.0f);normals.push_back(0.0f);
-			}
-			
-			// Final indices for this row
-			if (liquid) {
-				indices.push_back((unsigned short)(vertexCount - 2));
-				indices.push_back((unsigned short)vertexCount);
-				indices.push_back((unsigned short)(vertexCount - 1));
-				
-				indices.push_back((unsigned short)(vertexCount - 1));
-				indices.push_back((unsigned short)vertexCount);
-				indices.push_back((unsigned short)(vertexCount + 1));
-				vertexCount += 2;
-			} else {
-				indices.push_back((unsigned short)(vertexCount - 4));
-				indices.push_back((unsigned short)vertexCount);
-				indices.push_back((unsigned short)(vertexCount - 2));
-				
-				indices.push_back((unsigned short)(vertexCount - 2));
-				indices.push_back((unsigned short)vertexCount);
-				indices.push_back((unsigned short)(vertexCount + 2));
-				
-				indices.push_back((unsigned short)(vertexCount - 3));
-				indices.push_back((unsigned short)(vertexCount - 1));
-				indices.push_back((unsigned short)(vertexCount + 1));
-				
-				indices.push_back((unsigned short)(vertexCount - 1));
-				indices.push_back((unsigned short)(vertexCount + 1));
-				indices.push_back((unsigned short)(vertexCount + 3));
-				vertexCount += 4;
-			}
-		}
-		
-		long end=__rdtsc();
-		error("generation cycles: %i",end-start);
-		
-		mustupdate = false;
-		if (tilemat.maps[0].texture.id > 0) UnloadTexture(tilemat.maps[0].texture);
-		tilemat.maps[0].texture = LoadTextureFromImage(tilemap);
-
-		if (worldmodel.meshes[chunkindex].vertices) RL_FREE(worldmodel.meshes[chunkindex].vertices);
-		if (worldmodel.meshes[chunkindex].texcoords) RL_FREE(worldmodel.meshes[chunkindex].texcoords);
-		if (worldmodel.meshes[chunkindex].normals) RL_FREE(worldmodel.meshes[chunkindex].normals);
-		if (worldmodel.meshes[chunkindex].indices) RL_FREE(worldmodel.meshes[chunkindex].indices);
-
-		worldmodel.meshes[chunkindex].vertexCount = (int)(vertices.size() / 3);
-		worldmodel.meshes[chunkindex].triangleCount = (int)(indices.size() / 3);
-		worldmodel.meshes[chunkindex].vertices = (float*)RL_MALLOC(vertices.size() * sizeof(float));
-		worldmodel.meshes[chunkindex].texcoords = (float*)RL_MALLOC(texcoords.size() * sizeof(float));
-		worldmodel.meshes[chunkindex].normals = (float*)RL_MALLOC(normals.size() * sizeof(float));
-		worldmodel.meshes[chunkindex].indices = (unsigned short*)RL_MALLOC(indices.size() * sizeof(unsigned short));
-
-		memcpy(worldmodel.meshes[chunkindex].vertices, vertices.data(), vertices.size() * sizeof(float));
-		memcpy(worldmodel.meshes[chunkindex].texcoords, texcoords.data(), texcoords.size() * sizeof(float));
-		memcpy(worldmodel.meshes[chunkindex].normals, normals.data(), normals.size() * sizeof(float));
-		memcpy(worldmodel.meshes[chunkindex].indices, indices.data(), indices.size() * sizeof(unsigned short));
-		
-	    UploadMesh(&worldmodel.meshes[chunkindex], false);
-	}}
-    long end=__rdtsc();
-    error("mesh assignment cycles: %lli",end-start);
-}*/
-
-// new code i made when on market
+void format_number(long long num, char* buffer);
+#define FORMAT_NUM(n) ({ \
+    static char buf[32]; \
+    format_number(n, buf); \
+    buf; \
+})
 void map::updatechunks(){
-	int chunks=size/64;
-	int totalchunks=(size/64)*(size/64);
+    int chunks = size / 64;
+    int totalchunks = chunks * chunks;
+    int totalvers = 0;
+    long start = __rdtsc();
+	worldmodel = {};
+	
+	int vertexes = 0;
+	int indices = 0;
+	worldmodel.vertices = new float[402653184];
+	worldmodel.normals = new float[402653184];
+	worldmodel.texcoords = new float[402653184];
+	worldmodel.indices = new unsigned int[134217728];
+	
+	long genstart = __rdtsc();
+    for (int cz = 0; cz < chunks; cz++) for (int cx = 0; cx < chunks; cx++){
+		
 
-	for (int cz=0;cz<chunks;cz++) for (int cx=0;cx<chunks;cx++){
-		std::vector<float> normals;
-		std::vector<float> vertices;
-		std::vector<short> indices;
-		unsigned short vertexes=0;
-		for (int z=0;z<64;z++){
-			int zidx=(cz<<6)+z;
-			unsigned char prevtile=gentile((cx<<6),zidx);
-			bool terrain=prevtile<250;
-// add vertices
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx); // terrain: idx-7		!terrain: idx-3
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx+1); // terrain: idx-6	!terrain: idx-2
-			vertexes+=2;
-if (terrain){
-vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx); // terrain: idx-5
-vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx+1); // terrain: idx-4
-			vertexes+=2;
+        int chunkidx = (cz * chunks) + cx;
+		auto addnormal = [&](float nx,float ny,float nz){
+            worldmodel.normals[vertexes] = nx;
+            worldmodel.normals[vertexes+1] = ny;
+            worldmodel.normals[vertexes+2] = nz;
+        };
+        auto addtex = [&](int tile,float u,float v){
+            int tx = tile % 16;
+            int ty = tile / 16;
+            float du = 1.0f/16.0f;
+            float dv = 1.0f/16.0f;
+            worldmodel.texcoords[(vertexes/3)*2]   = (tx+u)*du;
+            worldmodel.texcoords[(vertexes/3)*2+1] = (ty+v)*dv;
+        };
+        for (int z = 0; z < 64; z++){
+            int zidx = (cz << 6) + z;
+            unsigned char prevtile = gentile((cx << 6), zidx);
+            bool terrain = prevtile < 250;
+
+            // initial vertices along z edge
+            addvert((cx << 6), 0, zidx);
+            addnormal(0,1,0);
+            addtex(prevtile,0,0);
+            addvert((cx << 6), 0, zidx+1);
+            addnormal(0,1,0);
+            addtex(prevtile,0,1);
+            vertexes += 2;
+
+            if (terrain){
+                addvert((cx << 6), 1, zidx);
+            	addnormal(0,1,0);
+                addtex(prevtile,1,0);
+                addvert((cx << 6), 1, zidx+1);
+            	addnormal(0,1,0);
+				addtex(prevtile,1,1);
+                vertexes += 2;
+            }
+
+            for (int x = 0; x < 64; x++){
+                int xidx = (cx << 6) + x;
+                unsigned char tile = gentile(xidx, zidx);
+
+                if (tile != prevtile){
+                    // add edge vertices
+                    addvert((cx << 6), 0, zidx);
+            		addnormal(0,1,0);
+					addtex(tile,0,0);
+                    addvert((cx << 6), 0, zidx+1);
+            		addnormal(0,1,0);
+					addtex(tile,0,1);
+                    vertexes += 2;
+
+                    if (terrain){
+                        addvert((cx << 6), 1, zidx);
+            			addnormal(0,1,0);
+						addtex(tile,1,0);
+                        addvert((cx << 6), 1, zidx+1);
+            			addnormal(0,1,0);
+						addtex(tile,1,1);
+                        vertexes += 2;
+                    }
+
+                    // add faces
+                    if (terrain){
+                        addidx(vertexes-5, vertexes-4, vertexes-1); // top
+                        addidx(vertexes-4, vertexes-1, vertexes);
+                        addidx(vertexes-3, vertexes-2, vertexes-1); // x+
+                        addidx(vertexes-2, vertexes-1, vertexes);
+                        addidx(vertexes-7, vertexes-6, vertexes-5); // x-
+                        addidx(vertexes-6, vertexes-5, vertexes-4);
+                        addidx(vertexes-6, vertexes-2, vertexes-4); // y+
+                        addidx(vertexes-4, vertexes, vertexes-6);
+                        addidx(vertexes-7, vertexes-3, vertexes-1); // y-
+                        addidx(vertexes-5, vertexes-1, vertexes-3);
+                    } else {
+                        addidx(vertexes-3, vertexes-2, vertexes-1); // top only
+                        addidx(vertexes-2, vertexes-1, vertexes);
+                    }
+
+                    // duplicate vertices for next iteration (old style)
+                    addvert((cx << 6), 0, zidx);
+            		addnormal(0,1,0);
+					addtex(tile,0,0);
+                    addvert((cx << 6), 0, zidx);
+            		addnormal(0,1,0);
+					addtex(tile,0,1);
+                    vertexes += 2;
+
+                    if (terrain){
+                        addvert((cx << 6), 0, zidx);
+            			addnormal(0,1,0);
+						addtex(tile,1,0);
+                        addvert((cx << 6), 0, zidx);
+            			addnormal(0,1,0);
+						addtex(tile,1,1);
+                        vertexes += 2;
+                    }
+                }
+
+                prevtile = tile;
+            }
+        }
+    }
+
+	long genend = __rdtsc();
+	long setstart = __rdtsc();
+	float* newVerts = new float[vertexes];
+	std::memcpy(newVerts, worldmodel.vertices, vertexes * sizeof(float));
+	delete[] worldmodel.vertices;
+	worldmodel.vertices = newVerts;
+
+	float* newNorms = new float[vertexes];
+	std::memcpy(newNorms, worldmodel.normals, vertexes * sizeof(float));
+	delete[] worldmodel.normals;
+	worldmodel.normals = newNorms;
+
+	float* newTex = new float[(vertexes/3)*2];
+	std::memcpy(newTex, worldmodel.texcoords, (vertexes/3)*2 * sizeof(float));
+	delete[] worldmodel.texcoords;
+	worldmodel.texcoords = newTex;
+
+	unsigned int* newIdx = new unsigned int[indices];
+	std::memcpy(newIdx, worldmodel.indices, indices * sizeof(unsigned int));
+	delete[] worldmodel.indices;
+	worldmodel.indices = newIdx;
+
+	// tell raylib how many
+	worldmodel.vertexCount = vertexes/3;
+	worldmodel.triangleCount = indices/3;
+	
+	
+	worldmodel.vboId = new unsigned int[4];
+	memset(worldmodel.vboId, 0, 4 * sizeof(unsigned int));
+
+	long setend = __rdtsc();
+	totalvers += vertexes/3;
+    long end = __rdtsc();
+	error("chunk indices: %s",FORMAT_NUM(indices));
+	error("chunk vertices: %s",FORMAT_NUM(vertexes/3));
+	error("cycles: %s\nvertices: %s",FORMAT_NUM(end - start),FORMAT_NUM(totalvers));
+	error("gen cycles: %s\nset cycles: %s",FORMAT_NUM(genend - genstart),FORMAT_NUM(setend - setstart));
 }
-			for (int x=0;x>64;x++){
-				int xidx=(cx<<6)+x;
-				unsigned char tile=gentile(xidx,zidx);
-				if (tile!=prevtile){
-// add vertices
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx); // terrain: idx-3		!terrain: idx-1
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx+1); // terrain: idx-2	!terrain: idx
-			vertexes+=2;
-if (terrain){
-vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx); // terrain: idx-1		
-vertices.push_back((cx<<6)); vertices.push_back(1); vertices.push_back(zidx+1); // terrain: idx		
-			vertexes+=2;
+
+void drawgl33mesh(Meshw mesh, Material material, Matrix transform) {
+	    rlEnableShader(material.shader.id);
+
+    // Send required data to shader (matrices, values)
+    //-----------------------------------------------------
+    // Upload to shader material.colDiffuse
+    if (material.shader.locs[SHADER_LOC_COLOR_DIFFUSE] != -1)
+    {
+        float values[4] = {
+            (float)material.maps[MATERIAL_MAP_DIFFUSE].color.r/255.0f,
+            (float)material.maps[MATERIAL_MAP_DIFFUSE].color.g/255.0f,
+            (float)material.maps[MATERIAL_MAP_DIFFUSE].color.b/255.0f,
+            (float)material.maps[MATERIAL_MAP_DIFFUSE].color.a/255.0f
+        };
+
+        rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_DIFFUSE], values, SHADER_UNIFORM_VEC4, 1);
+    }
+
+    // Upload to shader material.colSpecular (if location available)
+    if (material.shader.locs[SHADER_LOC_COLOR_SPECULAR] != -1)
+    {
+        float values[4] = {
+            (float)material.maps[MATERIAL_MAP_SPECULAR].color.r/255.0f,
+            (float)material.maps[MATERIAL_MAP_SPECULAR].color.g/255.0f,
+            (float)material.maps[MATERIAL_MAP_SPECULAR].color.b/255.0f,
+            (float)material.maps[MATERIAL_MAP_SPECULAR].color.a/255.0f
+        };
+
+        rlSetUniform(material.shader.locs[SHADER_LOC_COLOR_SPECULAR], values, SHADER_UNIFORM_VEC4, 1);
+    }
+
+    // Get a copy of current matrices to work with,
+    // just in case stereo render is required, and we need to modify them
+    // NOTE: At this point the modelview matrix just contains the view matrix (camera)
+    // That's because BeginMode3D() sets it and there is no model-drawing function
+    // that modifies it, all use rlPushMatrix() and rlPopMatrix()
+    Matrix matModel = MatrixIdentity();
+    Matrix matView = rlGetMatrixModelview();
+    Matrix matModelView = MatrixIdentity();
+    Matrix matProjection = rlGetMatrixProjection();
+
+    // Upload view and projection matrices (if locations available)
+    if (material.shader.locs[SHADER_LOC_MATRIX_VIEW] != -1) rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_VIEW], matView);
+    if (material.shader.locs[SHADER_LOC_MATRIX_PROJECTION] != -1) rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_PROJECTION], matProjection);
+
+    // Accumulate several model transformations:
+    //    transform: model transformation provided (includes DrawModel() params combined with model.transform)
+    //    rlGetMatrixTransform(): rlgl internal transform matrix due to push/pop matrix stack
+    matModel = MatrixMultiply(transform, rlGetMatrixTransform());
+
+    // Model transformation matrix is sent to shader uniform location: SHADER_LOC_MATRIX_MODEL
+    if (material.shader.locs[SHADER_LOC_MATRIX_MODEL] != -1) rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MODEL], matModel);
+
+    // Get model-view matrix
+    matModelView = MatrixMultiply(matModel, matView);
+
+    // Upload model normal matrix (if locations available)
+    if (material.shader.locs[SHADER_LOC_MATRIX_NORMAL] != -1) rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_NORMAL], MatrixTranspose(MatrixInvert(matModel)));
+
+
+    //-----------------------------------------------------
+
+    // Bind active texture maps (if available)
+    for (int i = 0; i < MAX_MATERIAL_MAPS; i++)
+    {
+        if (material.maps[i].texture.id > 0)
+        {
+            // Select current shader texture slot
+            rlActiveTextureSlot(i);
+
+            // Enable texture for active slot
+            if ((i == MATERIAL_MAP_IRRADIANCE) ||
+                (i == MATERIAL_MAP_PREFILTER) ||
+                (i == MATERIAL_MAP_CUBEMAP)) rlEnableTextureCubemap(material.maps[i].texture.id);
+            else rlEnableTexture(material.maps[i].texture.id);
+
+            rlSetUniform(material.shader.locs[SHADER_LOC_MAP_DIFFUSE + i], &i, SHADER_UNIFORM_INT, 1);
+        }
+    }
+
+    // Try binding vertex array objects (VAO) or use VBOs if not possible
+    // WARNING: UploadMesh() enables all vertex attributes available in mesh and sets default attribute values
+    // for shader expected vertex attributes that are not provided by the mesh (i.e. colors)
+    // This could be a dangerous approach because different meshes with different shaders can enable/disable some attributes
+    if (!rlEnableVertexArray(mesh.vaoId))
+    {
+        // Bind mesh VBO data: vertex position (shader-location = 0)
+        rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_POSITION]);
+        rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION], 3, RL_FLOAT, 0, 0, 0);
+        rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_POSITION]);
+
+        // Bind mesh VBO data: vertex texcoords (shader-location = 1)
+        rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD]);
+        rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01], 2, RL_FLOAT, 0, 0, 0);
+        rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD01]);
+
+        if (material.shader.locs[SHADER_LOC_VERTEX_NORMAL] != -1)
+        {
+            // Bind mesh VBO data: vertex normals (shader-location = 2)
+            rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_NORMAL]);
+            rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL], 3, RL_FLOAT, 0, 0, 0);
+            rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_NORMAL]);
+        }
+
+        // Bind mesh VBO data: vertex colors (shader-location = 3, if available)
+        if (material.shader.locs[SHADER_LOC_VERTEX_COLOR] != -1)
+        {
+            if (mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR] != 0)
+            {
+                rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_COLOR]);
+                rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR], 4, RL_UNSIGNED_BYTE, 1, 0, 0);
+                rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR]);
+            }
+            else
+            {
+                // Set default value for defined vertex attribute in shader but not provided by mesh
+                // WARNING: It could result in GPU undefined behaviour
+                float value[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+                rlSetVertexAttributeDefault(material.shader.locs[SHADER_LOC_VERTEX_COLOR], value, SHADER_ATTRIB_VEC4, 4);
+                rlDisableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_COLOR]);
+            }
+        }
+
+        // Bind mesh VBO data: vertex tangents (shader-location = 4, if available)
+        if (material.shader.locs[SHADER_LOC_VERTEX_TANGENT] != -1)
+        {
+            rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TANGENT]);
+            rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT], 4, RL_FLOAT, 0, 0, 0);
+            rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TANGENT]);
+        }
+
+        // Bind mesh VBO data: vertex texcoords2 (shader-location = 5, if available)
+        if (material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02] != -1)
+        {
+            rlEnableVertexBuffer(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_TEXCOORD2]);
+            rlSetVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02], 2, RL_FLOAT, 0, 0, 0);
+            rlEnableVertexAttribute(material.shader.locs[SHADER_LOC_VERTEX_TEXCOORD02]);
+        }
+
+        if (mesh.indices != NULL) rlEnableVertexBufferElement(mesh.vboId[RL_DEFAULT_SHADER_ATTRIB_LOCATION_INDICES]);
+    }
+
+    int eyeCount = 1;
+    if (rlIsStereoRenderEnabled()) eyeCount = 2;
+
+    for (int eye = 0; eye < eyeCount; eye++)
+    {
+        // Calculate model-view-projection matrix (MVP)
+        Matrix matModelViewProjection = MatrixIdentity();
+        if (eyeCount == 1) matModelViewProjection = MatrixMultiply(matModelView, matProjection);
+        else
+        {
+            // Setup current eye viewport (half screen width)
+            rlViewport(eye*rlGetFramebufferWidth()/2, 0, rlGetFramebufferWidth()/2, rlGetFramebufferHeight());
+            matModelViewProjection = MatrixMultiply(MatrixMultiply(matModelView, rlGetMatrixViewOffsetStereo(eye)), rlGetMatrixProjectionStereo(eye));
+        }
+
+        // Send combined model-view-projection matrix to shader
+        rlSetUniformMatrix(material.shader.locs[SHADER_LOC_MATRIX_MVP], matModelViewProjection);
+
+        // Draw mesh
+        if (mesh.indices != NULL) rlDrawVertexArrayElements(0, mesh.triangleCount*3, 0);
+        else rlDrawVertexArray(0, mesh.vertexCount);
+    }
+
+    // Unbind all bound texture maps
+    for (int i = 0; i < MAX_MATERIAL_MAPS; i++)
+    {
+        if (material.maps[i].texture.id > 0)
+        {
+            // Select current shader texture slot
+            rlActiveTextureSlot(i);
+
+            // Disable texture for active slot
+            if ((i == MATERIAL_MAP_IRRADIANCE) ||
+                (i == MATERIAL_MAP_PREFILTER) ||
+                (i == MATERIAL_MAP_CUBEMAP)) rlDisableTextureCubemap();
+            else rlDisableTexture();
+        }
+    }
+
+    // Disable all possible vertex array objects (or VBOs)
+    rlDisableVertexArray();
+    rlDisableVertexBuffer();
+    rlDisableVertexBufferElement();
+
+    // Disable shader program
+    rlDisableShader();
+
+    // Restore rlgl internal modelview and projection matrices
+    rlSetMatrixModelview(matView);
+    rlSetMatrixProjection(matProjection);
 }
 
-// add indices
-if (terrain){
-	// top
-indices.push_back( vertexes-5 ); indices.push_back( vertexes-4 ); indices.push_back( vertexes-1	); 
-indices.push_back( vertexes-4 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	); 
 
-
-	// x+
-indices.push_back( vertexes-3 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-1	);
-indices.push_back( vertexes-2 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	);
-
-	// x-
-indices.push_back( vertexes-7 ); indices.push_back( vertexes-6 ); indices.push_back( vertexes-5	);
-indices.push_back( vertexes-6 ); indices.push_back( vertexes-5 ); indices.push_back( vertexes-4	);
-
-	// y+
-indices.push_back( vertexes-6 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-4	);
-indices.push_back( vertexes-4 ); indices.push_back( vertexes   ); indices.push_back( vertexes-6	);
-
-	// y-
-indices.push_back( vertexes-7 ); indices.push_back( vertexes-3 ); indices.push_back( vertexes-1	);
-indices.push_back( vertexes-5 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes-3	);
-
-}else{
-	// top
-indices.push_back( vertexes-3 ); indices.push_back( vertexes-2 ); indices.push_back( vertexes-1	); 
-indices.push_back( vertexes-2 ); indices.push_back( vertexes-1 ); indices.push_back( vertexes	);
-}
-
-// add vertices
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
-			vertexes+=2;
-if (terrain){
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
-vertices.push_back((cx<<6)); vertices.push_back(0); vertices.push_back(zidx);
-			vertexes+=2;
-}				}
-				prevtile=tile;
-			}
-		}
-	}
+void format_number(long long num, char* buffer) {
+    char temp[32];
+    sprintf(temp, "%lld", num);
+    int len = strlen(temp);
+    int pos = 0;
+    
+    for (int i = 0; i < len; i++) {
+        if (i > 0 && (len - i) % 3 == 0) {
+            buffer[pos++] = '\'';
+        }
+        buffer[pos++] = temp[i];
+    }
+    buffer[pos] = '\0';
 }
