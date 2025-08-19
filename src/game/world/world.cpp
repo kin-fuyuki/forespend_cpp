@@ -28,9 +28,10 @@ map::map(){
 	data[2]=0;
 }
 Material tilemat;
-Texture2D tilesheetTex;
+Texture2D tilesheet;
 int locTilemap;
 
+Material basicmat;
 	Texture2D tilemapp;
 void map::init(){
 	camera.position = (Vector3){0.0f, 2.0f, 0.0f};
@@ -46,13 +47,13 @@ void map::init(){
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
 	rlSetClipPlanes(.01, 10000.0);
 
-	tilesheetTex = LoadTexture("res/images/tilesheet.png");
-	SetTextureFilter(tilesheetTex, TEXTURE_FILTER_BILINEAR);
+	tilesheet = LoadTexture("res/images/tilesheet.png");
+	//SetTextureFilter(tilesheet, TEXTURE_FILTER_N);
 
 	locTilemap  = GetShaderLocation(tilemat.shader, "tilemap");
 	
 	int sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
-	SetShaderValueTexture(tilemat.shader, sheetloc, tilesheetTex);
+	SetShaderValueTexture(tilemat.shader, sheetloc, tilesheet);
 	Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
 	float aspect = (float)GetScreenWidth() / (float)GetScreenHeight();
 	Matrix projection = MatrixPerspective(80, aspect, .01, 10000.0);
@@ -75,23 +76,26 @@ void map::init(){
 
 	echo("meshcount %i",worldmodel.meshCount);
 	echo("materialcount %i",worldmodel.materialCount);
+	basicmat=LoadMaterialDefault();
+	basicmat.maps[MATERIAL_MAP_DIFFUSE].texture=tilesheet;
 }
 
 map::~map(){
 }
 void map::render(){
 	BeginMode3D(camera);
-	DrawMesh(worldmodel.meshes[0],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
-	DrawMesh(worldmodel.meshes[1],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
-	DrawMesh(worldmodel.meshes[3],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
-	DrawMesh(worldmodel.meshes[2],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
+	rlDisableBackfaceCulling();
+	DrawMesh(worldmodel.meshes[0],basicmat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
+	DrawMesh(worldmodel.meshes[1],basicmat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
+	DrawMesh(worldmodel.meshes[3],basicmat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
+	DrawMesh(worldmodel.meshes[2],basicmat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
 	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
 	DrawText(pos.c_str(), 0, 0, 32, WHITE);
 	DrawText(std::to_string(GetFPS()).c_str(), 0, 36, 32, WHITE);
-	BeginShaderMode(tilemat.shader);
+	BeginShaderMode(basicmat.shader);
 
                 DrawRectangle(250 - 60, 90, 120, 60, RED);
                 DrawRectangleGradientH(250 - 90, 170, 180, 130, MAROON, GOLD);
@@ -129,26 +133,11 @@ void map::close(){
 	
 	savebmp("tilemap.bmp",(unsigned char*)tilemaptx.data,tilemaptx.width,tilemaptx.height);
 }
-
-mainmenu::mainmenu(){}
-mainmenu::~mainmenu(){}
-
-void mainmenu::init(){}
-void mainmenu::update(){}
-void mainmenu::render(){}
-void mainmenu::close(){}
-
 Shader tilegen = LoadShader(0, "res/shaders/tilegen.fs");
 inline unsigned char gentile(int x, int z) {
 	return SimplexNoise::noise(x * 0.01f, z * 0.01f)>0.5f ? 254 : 1;
 	//return (x%2==0)?2:254;
 }
-void format_number(long long num, char* buffer);
-#define FORMAT_NUM(n) ({ \
-	static char buf[32]; \
-	format_number(n, buf); \
-	buf; \
-})
 void map::updatechunks() {
 	int chunks = size / 64;
 	long start = __rdtsc();
@@ -180,24 +169,17 @@ void map::updatechunks() {
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	SetTextureFilter(tilemapp, TEXTURE_FILTER_POINT);
 	SetShaderValueTexture(tilemat.shader, locTilemap, tilemapp);
-	worldmodel.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tilemapp;
 	
 	error("cycles: %s", FORMAT_NUM(end - start));
 	error("terrain gen cycles: %s\nset cycles: %s", FORMAT_NUM(genend - genstart), FORMAT_NUM(setend - setstart));
 
 }
 
-void format_number(long long num, char* buffer) {
-	char temp[32];
-	sprintf(temp, "%lld", num);
-	int len = strlen(temp);
-	int pos = 0;
-	
-	for (int i = 0; i < len; i++) {
-		if (i > 0 && (len - i) % 3 == 0) {
-			buffer[pos++] = '\'';
-		}
-		buffer[pos++] = temp[i];
-	}
-	buffer[pos] = '\0';
-}
+mainmenu::mainmenu(){}
+mainmenu::~mainmenu(){}
+void mainmenu::init(){}
+void mainmenu::update(){}
+void mainmenu::render(){}
+void mainmenu::close(){}
+
+

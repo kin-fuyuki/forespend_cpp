@@ -34,3 +34,10 @@ bool pressed(unsigned char k);
 bool justchanged(unsigned char k);
 void clearchanged();
 void savebmp(const char* filename, unsigned char* data, int width, int height);
+
+void format_number(long long num, char* buffer);
+#define FORMAT_NUM(n) ({ \
+	static char buf[32]; \
+	format_number(n, buf); \
+	buf; \
+})

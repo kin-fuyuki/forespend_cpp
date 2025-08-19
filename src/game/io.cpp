@@ -87,6 +87,7 @@ void clearchanged() {
 }
 #include"world/world.h"
 #include <cstdint>
+#include <cstring>
 void savebmp(const char* filename, unsigned char* data, int width, int height) {
 	FILE* f = fopen(filename, "wb");
 	if (!f) return;
@@ -152,4 +153,19 @@ void savebmp(const char* filename, unsigned char* data, int width, int height) {
 
 	free(row);
 	fclose(f);
+}
+
+void format_number(long long num, char* buffer) {
+	char temp[32];
+	sprintf(temp, "%lld", num);
+	int len = strlen(temp);
+	int pos = 0;
+	
+	for (int i = 0; i < len; i++) {
+		if (i > 0 && (len - i) % 3 == 0) {
+			buffer[pos++] = '\'';
+		}
+		buffer[pos++] = temp[i];
+	}
+	buffer[pos] = '\0';
 }

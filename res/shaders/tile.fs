@@ -27,7 +27,7 @@ vec4 white(){
 }
 
 vec4 textured(){
-	return directional(white());
+	return directional(texture(tilesheet,fragTexCoord));
 }
 vec4 triplanar(){
 	return directional(white());
