@@ -1,24 +1,18 @@
-#version 330
+#version 330 core
+attribute vec3 vertexPosition;
+attribute vec2 vertexTexCoord;
+attribute vec4 vertexColor;
+attribute vec3 vertexNormal;
 
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec3 vertexNormal;
+out vec2 fragTexCoord;
+out vec4 fragColor;
+out vec3 normal;
 
 uniform mat4 mvp;
-uniform mat4 matModel;
-uniform mat4 matNormal;
-
-out vec3 fragPosition;
-out vec2 fragTexCoord;
-out vec3 fragNormal;
-out vec3 worldPosition;
-
-void main()
-{
-    fragPosition = vec3(matModel * vec4(vertexPosition, 1.0));
+uniform mat4 modelmat;
+void main() {
     fragTexCoord = vertexTexCoord;
-    fragNormal = normalize(vec3(matNormal * vec4(vertexNormal, 0.0)));
-    worldPosition = fragPosition;
-    
+    fragColor = vertexColor;
     gl_Position = mvp * vec4(vertexPosition, 1.0);
+    normal = mat3(modelmat) * vertexNormal;
 }

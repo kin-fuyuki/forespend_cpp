@@ -6,6 +6,7 @@ if [[ "$1" == "d" ]]; then
 else
 	cp bin/l5.64 bin/l5.64.tmp
 	bin/l5.64.tmp
+	#read -p "Press enter to continue..." key
 	rm bin/l5.64.tmp
 fi
 cd ../../

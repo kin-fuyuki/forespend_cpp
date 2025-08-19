@@ -6,7 +6,6 @@ void init() {
 	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	//set opengl version
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	current->init();
 }
@@ -35,9 +34,10 @@ void updateclra();
 void render() {
 	updateclra();
 
-	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)
-){
+	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)){
+		
 		close();}
+	
 	current->update();
 	BeginDrawing();
 	ClearBackground(clra);

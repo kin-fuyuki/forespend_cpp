@@ -91,12 +91,12 @@ void savebmp(const char* filename, unsigned char* data, int width, int height) {
 	FILE* f = fopen(filename, "wb");
 	if (!f) return;
 
-	int row_padded = (width * 3 + 3) & (~3); 
-	int data_size = row_padded * height;
-	int file_size = 54 + data_size;
+	int rowpad = (width * 3 + 3) & (~3); 
+	int datas = rowpad * height;
+	int size = 54 + datas;
 
 	
-	uint8_t bmp_header[54] = {
+	uint8_t header[54] = {
 		0x42, 0x4D,             
 		0, 0, 0, 0,             
 		0, 0, 0, 0,             
@@ -115,27 +115,27 @@ void savebmp(const char* filename, unsigned char* data, int width, int height) {
 	};
 
 	
-	bmp_header[2] = (uint8_t)(file_size);
-	bmp_header[3] = (uint8_t)(file_size >> 8);
-	bmp_header[4] = (uint8_t)(file_size >> 16);
-	bmp_header[5] = (uint8_t)(file_size >> 24);
+	header[2] = (uint8_t)(size);
+	header[3] = (uint8_t)(size >> 8);
+	header[4] = (uint8_t)(size >> 16);
+	header[5] = (uint8_t)(size >> 24);
 
 	
-	bmp_header[18] = (uint8_t)(width);
-	bmp_header[19] = (uint8_t)(width >> 8);
-	bmp_header[20] = (uint8_t)(width >> 16);
-	bmp_header[21] = (uint8_t)(width >> 24);
+	header[18] = (uint8_t)(width);
+	header[19] = (uint8_t)(width >> 8);
+	header[20] = (uint8_t)(width >> 16);
+	header[21] = (uint8_t)(width >> 24);
 
 	
-	bmp_header[22] = (uint8_t)(height);
-	bmp_header[23] = (uint8_t)(height >> 8);
-	bmp_header[24] = (uint8_t)(height >> 16);
-	bmp_header[25] = (uint8_t)(height >> 24);
+	header[22] = (uint8_t)(height);
+	header[23] = (uint8_t)(height >> 8);
+	header[24] = (uint8_t)(height >> 16);
+	header[25] = (uint8_t)(height >> 24);
 
-	fwrite(bmp_header, 1, 54, f);
+	fwrite(header, 1, 54, f);
 
 	
-	unsigned char* row = (unsigned char*)malloc(row_padded);
+	unsigned char* row = (unsigned char*)malloc(rowpad);
 	for (int y = height - 1; y >= 0; y--) {
 		for (int x = 0; x < width; x++) {
 			int i = (y * width + x) * 3;
@@ -144,10 +144,10 @@ void savebmp(const char* filename, unsigned char* data, int width, int height) {
 			row[x * 3 + 2] = data[i + 0]; 
 		}
 		
-		for (int p = width * 3; p < row_padded; p++)
+		for (int p = width * 3; p < rowpad; p++)
 			row[p] = 0;
 
-		fwrite(row, 1, row_padded, f);
+		fwrite(row, 1, rowpad, f);
 	}
 
 	free(row);
