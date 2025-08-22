@@ -17,6 +17,7 @@ Image tilemaptx;
 FastNoiseLite humiditynoise;
 FastNoiseLite heatnoise;
 FastNoiseLite populationnoise;
+char daytime=3;
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -100,11 +101,15 @@ void map::init(){
 	populationnoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
 	populationnoise.SetDomainWarpType(FastNoiseLite::DomainWarpType::DomainWarpType_BasicGrid);
 	sheet=LoadImageFromTexture(tilesheet);
+	skytexture=LoadTextureFromImage(skybox);
+	
 }
 
 map::~map(){
 }
 int flip=0;
+float playerrotx=0;
+float playerroty=0;
 void map::render(){
 	Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
 	float aspect = (float)GetScreenWidth() / (float)GetScreenHeight();
@@ -112,6 +117,32 @@ void map::render(){
 	Matrix mvp = MatrixMultiply(model, MatrixMultiply(view, projection));
 	int cols = 16;
 	flip = 0;
+	
+    // SKYBOX RENDERING - Before BeginMode3D
+    // Calculate skybox offset based on player rotation
+    float skyoffx = (playerrotx); // Adjust multiplier as needed
+    float skyoffy = (playerroty); // Adjust multiplier as needed
+    
+    // Wrap the offsets to prevent going out of texture bounds
+    skyoffx = fmod(skyoffx, skytexture.width);
+    skyoffy = fmod(skyoffy, skytexture.height);
+    if (skyoffx < 0) skyoffx += skytexture.width;
+    if (skyoffy < 0) skyoffy += skytexture.height;
+    
+    // Draw skybox texture covering the entire screen
+    Rectangle srcrec = {
+        skyoffx, 
+        skyoffy, 
+        (float)skytexture.width/(GetScreenWidth()/200), 
+        (float)skytexture.height
+    };
+    Rectangle dstrec = {
+        0, 
+        0, 
+        (float)GetScreenWidth(), 
+        (float)GetScreenHeight()
+    };
+	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
 	BeginMode3D(camera);
 	rlEnableColorBlend();
 	SetShaderValue(tilemat.shader, colsloc, &flip, SHADER_UNIFORM_INT);
@@ -140,7 +171,7 @@ void updatetextures();
 
 void map::update(){
 	texturesupdt++;
-	if (texturesupdt>1){
+	if (texturesupdt>120){
 		texturesupdt=0;
 		y+=0.1;
 		updatetextures();
@@ -152,6 +183,10 @@ void map::update(){
 	}
 	float turnspeed=1.f;
 	float movespeed=.2f;
+	float camx=
+			IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
+	float camy=
+			IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed;
 	UpdateCameraPro(&camera,
 		(Vector3){
 			IsKeyDown(KEY_W)*movespeed - IsKeyDown(KEY_S)*movespeed,
@@ -159,15 +194,19 @@ void map::update(){
 			IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed
 		},
 		(Vector3){
-			IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed,
-			IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed,
+			camx, 
+			camy,
 			0.0f
+			
 		},
 		0
 	);
+	playerrotx+=camx*2;
+	playerroty+=camy*2;
 	player.x=camera.position.x;
 	player.y=camera.position.y;
 	player.z=camera.position.z;
+	
 }
 void map::close(){
 	
@@ -296,6 +335,27 @@ std::map<float, Color> lava={
 	{W3,Color{255,180,180,255}},
 	{W4,Color{223,66,0,255}},
 	
+};
+/*
+var daynight=[
+	["797979","1c1c1c","1e0015"],#8am
+	["c0c0c0","404040","006e5a"],#12pm
+	["f5f5f5","5d5d5d","408e8b"],#16pm
+	["8c8c8c","474747","5c2e00"],#20pm
+	["797979","1c1c1c","180000"],#0am
+	["181818","1c1c1c","000000"],#4am
+	]
+*/
+#define SKY1 0.0f
+#define SKY2 0.8f
+#define SKY3 0.1f
+std::map<float, Color> daynight[6] = {
+	{{SKY1,Color{121,121,121,255}},{SKY2,Color{28,28,28,255}},{SKY3,Color{30,0,21,255}}},
+	{{SKY1,Color{192,192,192,255}},{SKY2,Color{64,64,64,255}},{SKY3,Color{0,110,90,255}}},
+	{{SKY1,Color{245,245,245,255}},{SKY2,Color{93,93,93,255}},{SKY3,Color{64,142,139,255}}},
+	{{SKY1,Color{140,140,140,255}},{SKY2,Color{71,71,71,255}},{SKY3,Color{92,46,0,255}}},
+	{{SKY1,Color{121,121,121,255}},{SKY2,Color{28,28,28,255}},{SKY3,Color{24,0,0,255}}},
+	{{SKY1,Color{24,24,24,255}},{SKY2,Color{28,28,28,255}},{SKY3,Color{0,0,0,255}}}
 };
 
 float dragx=0.f;
@@ -441,8 +501,47 @@ void updatetextures(){
 			((unsigned char*)sheet.data)[px+3] = 255;
 		}
 	}
+	// skybox
+	
+	texturenoise.SetFrequency(0.04);
+	texturenoise.SetFractalOctaves(8);
+	for (int x = 0; x < 200; x++) {
+		for (int z = 0; z < 100; z++) {
+			float u = (float)x / 200.0f;
+			float v = (float)z / 100.0f;
+			
+			float x_coord = cosf(u * 2.0f * 3.14159f) * 32.0f;
+			float z_coord = sinf(u * 2.0f * 3.14159f) * 32.0f;
+			float y_coord = cosf(v * 2.0f * 3.14159f) * 32.0f;
+			float w_coord = sinf(v * 2.0f * 3.14159f) * 32.0f;
+			
+			float idx = texturenoise.GetNoise(x_coord / 4, y * 2 + y_coord, z_coord * 2, w_coord);
+			Color r;
+			
+			if (idx >= SKY2) {
+				r = daynight[daytime][SKY1];
+			}
+			else if (idx >= SKY3) {
+				float denom = (SKY2 - SKY3);
+				float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
+				if (t < 0.0f) t = 0.0f;
+				if (t > 1.0f) t = 1.0f;
+				r = ColorLerp(daynight[daytime][SKY3], daynight[daytime][SKY1], t);
+			}
+			else {
+				r = daynight[daytime][SKY3];
+			}
+			
+			int px = (z * skybox.width + x) * 3;
+			((unsigned char*)skybox.data)[px + 0] = r.r;
+			((unsigned char*)skybox.data)[px + 1] = r.g;
+			((unsigned char*)skybox.data)[px + 2] = r.b;
+		}
+	}
+
 	long end = __rdtsc();
 	error ("cycles: %s", FORMAT_NUM(end - start));
 	
 	UpdateTexture(tilesheet, sheet.data);
+	UpdateTexture(skytexture, skybox.data);
 }

@@ -2,7 +2,7 @@
 cfiles=$(find src/ -type f -name "*.cpp")
 # add glut and opengl libs
 incs="-I/home/komi/src/cpp/inc/"
-libs="-lraylib -lGL"
+libs="-lraylib -lGL -lFastNoise"
 objs=""
 
 objs=""
