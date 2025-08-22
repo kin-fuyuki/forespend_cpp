@@ -2,21 +2,24 @@
 in vec2 fragTexCoord;
 in vec4 fragColor;
 in vec3 normal;
+in vec3 pos;
 uniform sampler2D tilemap;
 uniform sampler2D tilesheet;
 uniform vec2 size;
 uniform int cols;
 out vec4 FragColor;
 vec3 n=normalize(normal);
-
+bool lava=false;
 vec4 directional(vec4 c){
 	float mult;
+	if ((pos.y>=0.98))return c;
+	float fac=pos.y/2+0.5;
 	if(abs(n.y)>abs(n.x)&&abs(n.y)>abs(n.z)){
-		mult=(n.y>0.0)?1.0:0.1;
+		mult=(n.y>0.0)?1.0:pos.y;
 	}else if(abs(n.x)>abs(n.y)&&abs(n.x)>abs(n.z)){
-		mult=(n.x>0.0)?0.8:0.5;
+		mult=(n.x>0.0)?fac+.2:fac+0.3;
 	}else{
-		mult=(n.z>0.0)?0.65:0.3;
+		mult=(n.z>0.0)?fac+.45:fac+0.1;
 	}
 	vec3 c2=c.rgb;
 	return vec4(c2*mult,c.a);
@@ -27,13 +30,87 @@ vec4 white(){
 }
 
 vec4 textured(){
-	return directional(texture(tilesheet,fragTexCoord));
-}
+	float minus=1./1024;
+	float tile = texture(tilemap, fragTexCoord).r;
+    int idx = int(tile * 255.0);
+	bool terrain=idx<250;
+	if (pos.y>1.0){ //top
+		if (!terrain){
+			discard;
+			return vec4(0.0,0.0,0.0,0.0);
+		}
+		
+    }
+	else if (pos.y>0.0){ //walls
+		
+		float previousx=texture(tilemap, vec2(fragTexCoord.x-minus,fragTexCoord.y)).r;
+		float previousz=texture(tilemap, vec2(fragTexCoord.x,fragTexCoord.y-minus)).r;
+		int previousxidx = int(previousx * 255.0);
+		int previouszidx = int(previousz * 255.0);
+		float nextx=texture(tilemap, vec2(fragTexCoord.x+minus,fragTexCoord.y)).r;
+		float nextz=texture(tilemap, vec2(fragTexCoord.x,fragTexCoord.y+minus)).r;
+		bool nextxidx = int(nextx * 255.0)<250;
+		bool nextzidx = int(nextz * 255.0)<250;
+		bool prevxidx=previousxidx<250;
+		bool prevzidx=previouszidx<250;
+		bool isterrain=1!=1;
+		bool negx=abs(n.x) > abs(n.y) && abs(n.x) > abs(n.z);
+		bool negz=abs(n.z) > abs(n.x) && abs(n.z) > abs(n.y);
+		if (prevxidx&&negx&&!terrain) { // forces outer on -x
+			isterrain=prevxidx;
+			idx=previousxidx;
+		}else if (prevzidx&&negz&&!terrain) { // forces outer on -z
+			isterrain=prevzidx;
+			idx=previouszidx;
+		}
+		if (!isterrain){
+			if (
+				(negx&&!prevxidx)
+			||	(negz&&!prevzidx)
+				
+				)
+			isterrain=terrain;
+			
+			if (!isterrain){
+			discard;
+			return vec4(0.0,0.0,0.0,0.0);}
+		}
+		
+	}
+	else{
+		
+		if (idx<=245){
+			return vec4(0.0,0.0,0.0,0.0);
+		}
+	}
+    int x = idx % cols;
+    int y = idx / cols;
+    
+    float tsize = 1.0 / float(cols);
+    vec2 tuv = fract(fragTexCoord * size) / float(cols);
+	
+    return pos.y>0.0
+			?directional(texture(tilesheet, vec2(float(x) * tsize, float(y) * tsize) + tuv))
+			:texture(tilesheet, vec2(float(x) * tsize, float(y) * tsize) + tuv);
+} 
 vec4 triplanar(){
-	return directional(white());
+    vec3 weight = abs(n);
+    weight = weight / (weight.x + weight.y + weight.z);
+    
+    vec4 x = texture(tilemap, pos.yz * 0.1);
+    vec4 y = texture(tilemap, pos.xz * 0.1);  
+    vec4 z = texture(tilemap, pos.xy * 0.1);
+	
+    vec4 triplanarColor = x * weight.x + y * weight.y + z * weight.z;
+    
+    return directional(triplanarColor);
 }
-int rendermode=2;
+int rendermode=3;
 void main(){
+	if (fragColor.r==1. && fragColor.b==1.){
+		FragColor=white();
+		return;
+	}
 	if(rendermode==3){
 		FragColor=textured();
 	}else if(rendermode==2){
