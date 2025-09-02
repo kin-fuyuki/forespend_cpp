@@ -17,7 +17,8 @@ Image tilemaptx;
 FastNoiseLite humiditynoise;
 FastNoiseLite heatnoise;
 FastNoiseLite populationnoise;
-char daytime=3;
+float daycol[4]={.8,.8,.8,.8};
+char daytime=2;
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -37,7 +38,7 @@ map::map(){
 }
 Material tilemat;
 Texture2D tilesheet;
-int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc;
+int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc;
 Matrix model=Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
 
 Material basicmat;
@@ -49,7 +50,7 @@ Image skybox;
 Texture skytexture;
 void map::init(){
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
-	camera.position = (Vector3){0.0f, 2.0f, 0.0f};
+	camera.position = (Vector3){0.0f, 1.6f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
 	camera.fovy = 80.0f;
@@ -61,7 +62,7 @@ void map::init(){
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
-	rlSetClipPlanes(.5, 4000.0);
+	rlSetClipPlanes(.2, 4000.0);
 
 	tilesheet = LoadTexture("res/images/tilesheet.png");
 	//SetTextureFilter(tilesheet, TEXTURE_FILTER_N);
@@ -71,6 +72,7 @@ void map::init(){
 	MVPloc = GetShaderLocation(tilemat.shader, "mvp");
 	modelloc = GetShaderLocation(tilemat.shader, "modelmat");
 	sizeloc = GetShaderLocation(tilemat.shader, "size");
+	fragcolorloc = GetShaderLocation(tilemat.shader, "fragColor");
 	
 	colsloc = GetShaderLocation(tilemat.shader, "cols");
 	fliploc = GetShaderLocation(tilemat.shader, "flip");
@@ -80,16 +82,16 @@ void map::init(){
 	
 	humiditynoise=FastNoiseLite((this->world*3)+1);
 	heatnoise=FastNoiseLite((this->world*3)+2);
-	populationnoise=FastNoiseLite((this->world*3)+3);
+	populationnoise=FastNoiseLite((this->world*3));
 	
 	humiditynoise.SetFractalType(FastNoiseLite::FractalType::FractalType_None);
-	humiditynoise.SetFractalOctaves(1);
-	humiditynoise.SetFrequency(0.1);
+	humiditynoise.SetFractalOctaves(3);
+	humiditynoise.SetFrequency(0.4);
 	humiditynoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
 	humiditynoise.SetDomainWarpType(FastNoiseLite::DomainWarpType::DomainWarpType_BasicGrid);
 	
 	
-	heatnoise.SetFractalType(FastNoiseLite::FractalType::FractalType_FBm);
+	heatnoise.SetFractalType(FastNoiseLite::FractalType::FractalType_None);
 	heatnoise.SetFractalOctaves(1);
 	heatnoise.SetFrequency(0.1);
 	heatnoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
@@ -109,38 +111,38 @@ map::~map(){
 }
 int flip=0;
 float playerrotx=0;
-float playerroty=0;
+float playerroty=150;
+
 void map::render(){
 	Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
-	float aspect = (float)GetScreenWidth() / (float)GetScreenHeight();
-	Matrix projection = MatrixPerspective(80, aspect, .5, 4000.0);
+	float aspect = (float)renderw / (float)renderh;
+	Matrix projection = MatrixPerspective(80, aspect, .2, 4000.0);
 	Matrix mvp = MatrixMultiply(model, MatrixMultiply(view, projection));
 	int cols = 16;
 	flip = 0;
 	
-    // SKYBOX RENDERING - Before BeginMode3D
-    // Calculate skybox offset based on player rotation
-    float skyoffx = (playerrotx); // Adjust multiplier as needed
-    float skyoffy = (playerroty); // Adjust multiplier as needed
+	float yaw = fmodf(playerrotx, 360.0f);
+	if (yaw < 0) yaw += 360.0f;
+
+	float skyoffx = (yaw / 360.0f) * skytexture.width;
+    float skyoffy = (playerroty);
     
-    // Wrap the offsets to prevent going out of texture bounds
     skyoffx = fmod(skyoffx, skytexture.width);
     skyoffy = fmod(skyoffy, skytexture.height);
     if (skyoffx < 0) skyoffx += skytexture.width;
     if (skyoffy < 0) skyoffy += skytexture.height;
     
-    // Draw skybox texture covering the entire screen
     Rectangle srcrec = {
         skyoffx, 
         skyoffy, 
-        (float)skytexture.width/(GetScreenWidth()/200), 
-        (float)skytexture.height
+        (float)skytexture.width/(renderw/100), 
+        (float)skytexture.height/2
     };
     Rectangle dstrec = {
         0, 
         0, 
-        (float)GetScreenWidth(), 
-        (float)GetScreenHeight()
+        (float)renderw, 
+        (float)renderh
     };
 	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
 	BeginMode3D(camera);
@@ -154,35 +156,35 @@ void map::render(){
 	SetShaderValueMatrix(tilemat.shader,MVPloc, mvp);
 	rlDisableBackfaceCulling();
 	//basicmat tilemat
+	SetShaderValue(tilemat.shader, fragcolorloc, &daycol, SHADER_UNIFORM_VEC4);
 	DrawMesh(worldmodel.meshes[0],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	DrawMesh(worldmodel.meshes[1],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	DrawMesh(worldmodel.meshes[2],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
-	DrawTexture(tilesheet,0,180,WHITE);
+	//DrawTexture(tilesheet,0,180,WHITE);
 	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
 	DrawText(pos.c_str(), 0, 0, 32, WHITE);
 	DrawText(std::to_string(GetFPS()).c_str(), 0, 36, 32, WHITE);
+	
 }
 int texturesupdt=120;
 float y=-0.1;
 void updatetextures();
-
+bool drawnworld=true;
 void map::update(){
-	texturesupdt++;
-	if (texturesupdt>120){
-		texturesupdt=0;
-		y+=0.1;
-		updatetextures();
-	}
 	if (mustupdate==true){
 		updatechunks();
 		mustupdate=false;
 	
 	}
 	float turnspeed=1.f;
-	float movespeed=.2f;
+	if (IsKeyPressed(KEY_F12)){
+		mustupdate=true;
+	}
+	float movespeed=.2f*(1.+10*
+		(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT)));
 	float camx=
 			IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
 	float camy=
@@ -191,7 +193,8 @@ void map::update(){
 		(Vector3){
 			IsKeyDown(KEY_W)*movespeed - IsKeyDown(KEY_S)*movespeed,
 			IsKeyDown(KEY_D)*movespeed - IsKeyDown(KEY_A)*movespeed,
-			IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed
+			//0.0f
+			(IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed)*1
 		},
 		(Vector3){
 			camx, 
@@ -201,23 +204,81 @@ void map::update(){
 		},
 		0
 	);
-	playerrotx+=camx*2;
-	playerroty+=camy*2;
-	player.x=camera.position.x;
-	player.y=camera.position.y;
-	player.z=camera.position.z;
 	
+	playerrotx+=camx;
+	
+	if ((playerroty>179&&camy>0)||(playerroty<101&&camy<0)){
+		camy=0;
+	}
+	playerroty+=camy/2;
+	//echo ("playerrotx %f playerroty %f",playerrotx,playerroty);
+	int prevy=(int)player.y;
+	player.x=camera.position.x;
+	player.y=camera.position.y-2;
+	player.z=camera.position.z;
+	if (player.y>=150&&prevy<150){
+	tilesheet = LoadTexture("res/images/tilesheetl1.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}else if (player.y<150&&prevy>=150){
+	tilesheet = LoadTexture("res/images/tilesheet.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}
+	else if(player.y>=200&&prevy<200){
+	tilesheet = LoadTexture("res/images/tilesheetl2.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();		
+	}else if(player.y<200&&prevy>=200){
+	tilesheet = LoadTexture("res/images/tilesheetl1.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}
+	else if (player.y>=280&&prevy<280){
+	tilesheet = LoadTexture("res/images/tilesheetl3.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}else if (player.y<280&&prevy>=280){
+	tilesheet = LoadTexture("res/images/tilesheetl2.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}
+	else if (player.y>=360&&prevy<360){
+	tilesheet = LoadTexture("res/images/tilesheetl4.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}else if (player.y<360&&prevy>=360){
+	tilesheet = LoadTexture("res/images/tilesheetl3.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	updatetextures();
+	}
+	
+	texturesupdt++;
+	if (texturesupdt>60){
+		texturesupdt=0;
+		y+=0.1;
+		updatetextures();
+//		daytime=daytime==5?daytime=0:daytime+1;
+	}
 }
 void map::close(){
-	
-	savebmp("tilemap.bmp",(unsigned char*)tilemaptx.data,
-	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width>>2:tilemaptx.width
+	unsigned char *data=new unsigned char[size*size*3];
+	tilesheet = LoadTexture("res/images/tilesheetl4.png");
+	sheet=LoadImageFromTexture(tilesheet);
+	for (int i = 0; i < size*size; i++) {
+		unsigned char tile = ((unsigned char*)tilemaptx.data)[i];
+		int xtilecoord=tile%16;
+		int ytilecoord=tile/16;
+		data[i*3+0]=((unsigned char*)sheet.data)[(ytilecoord*16+xtilecoord)*4+0];
+		data[i*3+1]=((unsigned char*)sheet.data)[(ytilecoord*16+xtilecoord)*4+1];
+		data[i*3+2]=((unsigned char*)sheet.data)[(ytilecoord*16+xtilecoord)*4+2];
+		
+	}
+	savebmp("tilemap.bmp",data,
+	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width:tilemaptx.width
 	,tilemaptx.height);
 }
-// simplex og: 219'433'052 cycles on 1024x1024
-// fastnoise lite:
-Shader tilegen = LoadShader(0, "res/shaders/tilegen.fs");
-#define TESTGEN
+//#define TESTGEN
 
 #include"biome.h"
 inline unsigned char gentile(int x, int z,unsigned char mask,unsigned char population){
@@ -254,9 +315,13 @@ inline unsigned char gentile(int x, int z,unsigned char mask,unsigned char popul
 #endif
 }
 void map::updatechunks() {
-	int chunks = size / 64;
 	long start = __rdtsc();
 	long genstart = __rdtsc();
+	if (!drawnworld){
+	int chunksize=64;
+	int chunks = size / chunksize;
+	// 1=0 2=1 4=2 8=3 16=4 32=5 64=6 128=7 256=8 512=9 1024=10 2048=11 4096=12 8192=13 16384=14 32768=15
+	unsigned char shift=6;
 	for (int cz = 0; cz < chunks; cz++) {
 		for (int cx = 0; cx < chunks; cx++) {
 			
@@ -264,41 +329,44 @@ void map::updatechunks() {
 			float heat=(heatnoise.GetNoise(fx,fz));
 			float humidity=(humiditynoise.GetNoise(fx,fz));
 			float population=(populationnoise.GetNoise(fx,fz));
-			unsigned char mask =
-				((unsigned char)(((heat + 1.0f) * 2.0f) > 3 ? 3 : (unsigned char)((heat + 1.0f) * 2.0f)) << 4) |
-				((unsigned char)(((humidity + 1.0f) * 2.0f) > 3 ? 3 : (unsigned char)((humidity + 1.0f) * 2.0f)) << 2);
-	
-			for (int z = 0; z < 64; z++) {
-				int zidx = (cz << 6) + z;
-				unsigned char tile = gentile((cx << 6), zidx,mask,population);
-				for (int x = 0; x < 64; x++) {
+			char heatpos=(heat+1.)*4;
+			char humiditypos=(humidity+1.)*2;
+			unsigned char mask=(heatpos<<2)+humiditypos;
+			
+			for (int z = 0; z < chunksize; z++) {
+				int zidx = (cz << shift) + z;
+				unsigned char tile = gentile((cx << shift), zidx,mask,(unsigned char)population);
+				for (int x = 0; x < chunksize; x++) {
 					
-					int xidx = (cx << 6) + x;
-					tile = gentile(xidx, zidx,mask,population);
+					int xidx = (cx << shift) + x;
+					tile = gentile(xidx, zidx,mask,(unsigned char)population);
 					
 					((unsigned char*)tilemaptx.data)[zidx * size + xidx] = tile;
 					tiles[zidx * size + xidx] = tile;
 				}
 			}
 		}
-	}
+	}}
 	long genend = __rdtsc();
 	
 	long setstart = __rdtsc();
 	long setend = __rdtsc();
 	long end = __rdtsc();
+	if (drawnworld)
+	tilemaptx=LoadImage("res/images/coolworld.png");
+	bool naturallygray=tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+	echo ("size: %s, format: %s", FORMAT_NUM(tilemaptx.width), FORMAT_NUM(tilemaptx.format));
 	
-	//tilemaptx=LoadImage("res/images/worldtest.png");
 	tilemaptx.format=PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 	//tilemaptx.width>>=2;
-	if (tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE){
+	if (tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE&&!naturallygray){
 		tilemaptx.width<<=2;
 	}
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	//SetTextureFilter(tilemapp, TEXTURE_FILTER_POINT);
 	UpdateTexture(tilemapp, tilemaptx.data);
-	error("cycles: %s", FORMAT_NUM(end - start));
-	error("terrain gen cycles: %s\nset cycles: %s", FORMAT_NUM(genend - genstart), FORMAT_NUM(setend - setstart));
+	success("cycles: %s", FORMAT_NUM(end - start));
+	success("terrain gen cycles: %s\nset cycles: %s", FORMAT_NUM(genend - genstart), FORMAT_NUM(setend - setstart));
 
 }
 
@@ -313,22 +381,21 @@ void mainmenu::close(){}
 #define G2 0.1f
 #define G3 0.98f
 std::map<float, Color> grass={
-	{G1,Color{30,50,18,255}},
-	{G2,Color{55,126,60,255}},
+	{G1,Color{20,110,18,255}},
+	{G2,Color{55,156,60,255}},
 	{G3,Color{111,255,122,255}},
 };
 #define W1 0.1f
-#define W2 0.48f
-#define W3 0.88f
+#define W2 0.38f
+#define W3 0.58f
 #define W4 0.98f
 std::map<float, Color> water={
-	{W1,Color{82,130,130,255}},
-	{W2,Color{162,255,255,255}},
+	{W1,Color{100,150,200,255}},
+	{W2,Color{162,205,255,255}},
 	{W3,Color{255,255,255,255}},
-	{W4,Color{162,255,255,255}},
+	{W4,Color{162,205,255,255}},
 	
 };
-// lava is basically same as water but flipped red
 std::map<float, Color> lava={
 	{W1,Color{130,26,0,255}},
 	{W2,Color{223,66,0,255}},
@@ -346,6 +413,7 @@ var daynight=[
 	["181818","1c1c1c","000000"],#4am
 	]
 */
+
 #define SKY1 0.0f
 #define SKY2 0.8f
 #define SKY3 0.1f
@@ -363,29 +431,39 @@ float dragz=0.f;
 void updatetextures(){
 	dragx+=0.5f;
 	dragz+=1.5f;
-	// 32 x 32 per tile, 16 x 16 tiles
 	long start = __rdtsc();
 	texturenoise.SetFractalType(FastNoiseLite::FractalType::FractalType_None);
 	texturenoise.SetFractalOctaves(0);
 	texturenoise.SetFrequency(1.);
 	texturenoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
 	texturenoise.SetDomainWarpType(FastNoiseLite::DomainWarpType::DomainWarpType_BasicGrid);
-	
-	//grass position: 1,0
+	int size=sheet.width>>4;
 	int tileX = 1;
 	int tileY = 0;
-	int px = tileX * 32;
-	int pz = tileY * 32;
+	int px = tileX * size;
+	int pz = tileY * size;
 	float previdx = texturenoise.GetNoise((float)0, y, (float)0);
-	echo("previdx %f",previdx);
+	int roadsx[]={
+		12*size,13*size,14*size,15*size,12*size,13*size
+	};
+	int roadsz[]={
+		1*size,1*size,1*size,1*size,2*size,2*size
+	};
 	bool genpixel=true;
-	for (int x=0;x<32;x++){
-		for (int z=0;z<32;z++){
+	for (int x=0;x<size;x++){
+		for (int z=0;z<size;z++){
 			int xidx = px + x;
 			int zidx = pz + z;
 
 			int px = (zidx * sheet.width + xidx) * 4;
-			
+			int pixels[]{
+				((roadsz[0]+z)*sheet.width+(roadsx[0]+x))*4,
+				((roadsz[1]+z)*sheet.width+(roadsx[1]+x))*4,
+				((roadsz[2]+z)*sheet.width+(roadsx[2]+x))*4,
+				((roadsz[3]+z)*sheet.width+(roadsx[3]+x))*4,
+				((roadsz[4]+z)*sheet.width+(roadsx[4]+x))*4,
+				((roadsz[5]+z)*sheet.width+(roadsx[5]+x))*4
+			};
 			float tidx =(genpixel?
 				(texturenoise.GetNoise((float)x, y, (float)z+dragz))
 				:previdx
@@ -410,11 +488,79 @@ void updatetextures(){
 					}
 				}
 			}
-
+			
 			((unsigned char*)sheet.data)[px+0] = r.r;
 			((unsigned char*)sheet.data)[px+1] = r.g;
 			((unsigned char*)sheet.data)[px+2] = r.b;
-			((unsigned char*)sheet.data)[px+3] = 255;
+			if (
+				((unsigned char*)sheet.data)[pixels[0]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[0]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[0]+2]==0||
+				((unsigned char*)sheet.data)[pixels[0]+3]==254
+			){
+			((unsigned char*)sheet.data)[pixels[0]+0] = r.r;
+			((unsigned char*)sheet.data)[pixels[0]+1] = r.g;
+			((unsigned char*)sheet.data)[pixels[0]+2] = r.b;
+			((unsigned char*)sheet.data)[pixels[0]+3] = 254;
+			
+			}
+			if (
+				((unsigned char*)sheet.data)[pixels[1]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[1]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[1]+2]==0||
+				((unsigned char*)sheet.data)[pixels[1]+3]==254
+			){
+				((unsigned char*)sheet.data)[pixels[1]+0] = r.r;
+				((unsigned char*)sheet.data)[pixels[1]+1] = r.g;
+				((unsigned char*)sheet.data)[pixels[1]+2] = r.b;
+				((unsigned char*)sheet.data)[pixels[1]+3] = 254;
+			}
+			if (
+				((unsigned char*)sheet.data)[pixels[2]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[2]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[2]+2]==0||
+				((unsigned char*)sheet.data)[pixels[2]+3]==254
+			){
+			((unsigned char*)sheet.data)[pixels[2]+0] = r.r;
+			((unsigned char*)sheet.data)[pixels[2]+1] = r.g;
+			((unsigned char*)sheet.data)[pixels[2]+2] = r.b;
+			((unsigned char*)sheet.data)[pixels[2]+3] = 254;
+			}
+			if (
+				((unsigned char*)sheet.data)[pixels[3]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[3]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[3]+2]==0||
+				((unsigned char*)sheet.data)[pixels[3]+3]==254
+			){
+			((unsigned char*)sheet.data)[pixels[3]+0] = r.r;
+			((unsigned char*)sheet.data)[pixels[3]+1] = r.g;
+			((unsigned char*)sheet.data)[pixels[3]+2] = r.b;
+			((unsigned char*)sheet.data)[pixels[3]+3] = 254;
+			}
+			if (
+				((unsigned char*)sheet.data)[pixels[4]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[4]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[4]+2]==0||
+				((unsigned char*)sheet.data)[pixels[4]+3]==254
+			){
+			((unsigned char*)sheet.data)[pixels[4]+0] = r.r;
+			((unsigned char*)sheet.data)[pixels[4]+1] = r.g;
+			((unsigned char*)sheet.data)[pixels[4]+2] = r.b;
+			((unsigned char*)sheet.data)[pixels[4]+3] = 254;
+			}
+			if (
+				((unsigned char*)sheet.data)[pixels[5]+0]==0 &&
+				((unsigned char*)sheet.data)[pixels[5]+1]==255 &&
+				((unsigned char*)sheet.data)[pixels[5]+2]==0||
+				((unsigned char*)sheet.data)[pixels[5]+3]==254
+			){
+			((unsigned char*)sheet.data)[pixels[5]+0] = r.r;
+			((unsigned char*)sheet.data)[pixels[5]+1] = r.g;
+			((unsigned char*)sheet.data)[pixels[5]+2] = r.b;
+			((unsigned char*)sheet.data)[pixels[5]+3] = 254;
+			}
+			
+			
 			genpixel=!genpixel;
 			
 			previdx=idx;
@@ -430,10 +576,10 @@ void updatetextures(){
 	texturenoise.SetDomainWarpType(FastNoiseLite::DomainWarpType::DomainWarpType_BasicGrid);
 	tileX=15;
 	tileY=15;
-	px = tileX * 32;
-	pz = tileY * 32;
-	for (int x=0;x<32;x++){
-		for (int z=0;z<32;z++){
+	px = tileX * size;
+	pz = tileY * size;
+	for (int x=0;x<size;x++){
+		for (int z=0;z<size;z++){
 			int xidx = px + x;
 			int zidx = pz + z;
 
@@ -468,10 +614,10 @@ void updatetextures(){
 	texturenoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Perlin);
 	tileX=14;
 	tileY=15;
-	px = tileX * 32;
-	pz = tileY * 32;
-	for (int x=0;x<32;x++){
-		for (int z=0;z<32;z++){
+	px = tileX * size;
+	pz = tileY * size;
+	for (int x=0;x<size;x++){
+		for (int z=0;z<size;z++){
 			int xidx = px + x;
 			int zidx = pz + z;
 
@@ -503,44 +649,60 @@ void updatetextures(){
 	}
 	// skybox
 	
-	texturenoise.SetFrequency(0.04);
-	texturenoise.SetFractalOctaves(8);
-	for (int x = 0; x < 200; x++) {
-		for (int z = 0; z < 100; z++) {
-			float u = (float)x / 200.0f;
-			float v = (float)z / 100.0f;
-			
-			float x_coord = cosf(u * 2.0f * 3.14159f) * 32.0f;
-			float z_coord = sinf(u * 2.0f * 3.14159f) * 32.0f;
-			float y_coord = cosf(v * 2.0f * 3.14159f) * 32.0f;
-			float w_coord = sinf(v * 2.0f * 3.14159f) * 32.0f;
-			
-			float idx = texturenoise.GetNoise(x_coord / 4, y * 2 + y_coord, z_coord * 2, w_coord);
-			Color r;
-			
-			if (idx >= SKY2) {
-				r = daynight[daytime][SKY1];
-			}
-			else if (idx >= SKY3) {
-				float denom = (SKY2 - SKY3);
-				float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
-				if (t < 0.0f) t = 0.0f;
-				if (t > 1.0f) t = 1.0f;
-				r = ColorLerp(daynight[daytime][SKY3], daynight[daytime][SKY1], t);
-			}
-			else {
-				r = daynight[daytime][SKY3];
-			}
-			
-			int px = (z * skybox.width + x) * 3;
-			((unsigned char*)skybox.data)[px + 0] = r.r;
-			((unsigned char*)skybox.data)[px + 1] = r.g;
-			((unsigned char*)skybox.data)[px + 2] = r.b;
-		}
-	}
+	texturenoise.SetFrequency(0.5);
+	texturenoise.SetFractalOctaves(4);
+daycol[0] = (
+	((float)daynight[daytime][SKY3].r) + ((float)daynight[daytime][SKY1].r))/ 512.0f;
+daycol[1] = (
+	((float)daynight[daytime][SKY3].g) + ((float)daynight[daytime][SKY1].g))/ 512.0f;
+daycol[2] = (
+	((float)daynight[daytime][SKY3].b) + ((float)daynight[daytime][SKY1].b))/ 512.0f;
+
+
+int width = skybox.width;
+int height = skybox.height;
+float noiseScale = 3.0f;
+float yDepth = 0.02f;
+
+
+for (int z = 0; z < height; ++z) {
+    float v = (float)z / (float)(height - 1);
+    float phi = (v - 0.5f) * PI;
+
+    for (int x = 0; x < width; ++x) {
+        float u = (float)x / (float)width;
+        float theta = u * 2.0f * PI;
+
+        float cosPhi = cosf(phi);
+        float vx = cosPhi * cosf(theta);
+        float vy = sinf(phi);
+        float vz = cosPhi * sinf(theta);
+        float idx = texturenoise.GetNoise(
+vx * noiseScale, vy * noiseScale * 2,vz * noiseScale, y * yDepth);
+
+        Color r;
+        if (idx >= SKY2) {
+            r = daynight[daytime][SKY1];
+        } else if (idx >= SKY3) {
+            float denom = (SKY2 - SKY3);
+            float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
+            t = fmaxf(0.0f, fminf(1.0f, t));
+            r = ColorLerp(daynight[daytime][SKY3], daynight[daytime][SKY1], t);
+        } else {
+            r = daynight[daytime][SKY3];
+        }
+
+        int pixIndex = (z * width + x) * 3;
+        ((unsigned char*)skybox.data)[pixIndex + 0] = r.r;
+        ((unsigned char*)skybox.data)[pixIndex + 1] = r.g;
+        ((unsigned char*)skybox.data)[pixIndex + 2] = r.b;
+    }
+}
+
+
 
 	long end = __rdtsc();
-	error ("cycles: %s", FORMAT_NUM(end - start));
+	//success ("cycles: %s", FORMAT_NUM(end - start));
 	
 	UpdateTexture(tilesheet, sheet.data);
 	UpdateTexture(skytexture, skybox.data);

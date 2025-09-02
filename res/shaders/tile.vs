@@ -5,7 +5,6 @@ attribute vec4 vertexColor;
 attribute vec3 vertexNormal;
 
 out vec2 fragTexCoord;
-out vec4 fragColor;
 out vec3 normal;
 out vec3 pos;
 out int level;
@@ -14,7 +13,6 @@ uniform mat4 modelmat;
 void main() {
 	
     fragTexCoord = vertexTexCoord;
-    fragColor =vec4(0.,0.,0.,1.);
 	vec3 vpos=vertexPosition;
 	if (vpos.y>1.0)	vpos.y=0.99;
 	else if (vpos.y<0.0) vpos.y=0.01;

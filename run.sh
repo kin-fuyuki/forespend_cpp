@@ -1,3 +1,4 @@
+./link.sh
 cd out/linux/
 if [[ "$1" == "d" ]]; then
 	cp bin/l5.64 bin/l5.64.tmp

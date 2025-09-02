@@ -1,3 +1,5 @@
+#ifndef IO_H
+#define IO_H
 // here be shenegans
 #ifdef __MMX__
 #include <mmintrin.h>
@@ -27,7 +29,17 @@ extern __m256i 	keys,changed;
 #include <immintrin.h>
 extern __m256i 	keys,changed;
 #else
-uint32_t 	keys[8],changed[8];
+#include <time.h>
+#include <stdint.h>
+
+static inline uint64_t __rdtsc_android() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec * 1000000000ull + ts.tv_nsec;
+}
+
+#define __rdtsc() __rdtsc_android()
+
 #endif
 void setkey(unsigned char k,bool state);
 bool pressed(unsigned char k);
@@ -41,3 +53,5 @@ void format_number(long long num, char* buffer);
 	format_number(n, buf); \
 	buf; \
 })
+
+#endif

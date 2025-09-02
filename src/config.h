@@ -1,4 +1,7 @@
 #pragma once
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #define STARTINGRESX	380
 #define STARTINGRESY	240
 #define STARTINGRES		STARTINGRESX, STARTINGRESY
@@ -7,6 +10,8 @@
 extern std::string NAME;
 extern std::string VERSION;
 extern std::string PATH;
+extern short renderw;
+extern short renderh;
 #define CSTR(x)			(char*)(x.c_str())
 
 struct config {
@@ -22,3 +27,6 @@ bool firstlaunch;
 	void save();
 	
 };
+
+
+#endif

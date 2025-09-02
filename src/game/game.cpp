@@ -1,13 +1,20 @@
 #include "game.h"
 #include "../term.h"
-
+short	renderw=380;
+short	renderh=240;
+Shader shd;GRAPHICS_API_OPENGL_33
+RenderTexture2D rndr;
 void init() {
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	current->init();
+	error("gl version: %i",rlGetVersion());
+	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
+	rndr=LoadRenderTexture(380,240);
 }
 void close() {
 	current->close();
@@ -37,13 +44,25 @@ void render() {
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)){
 		
 		close();}
-	
 	current->update();
-	BeginDrawing();
+	SetTraceLogLevel(LOG_ERROR);
+	BeginTextureMode(rndr);
 	ClearBackground(clra);
 	current->render();
+	EndTextureMode();
+	
+	BeginDrawing();
+	BeginShaderMode(shd);
+	DrawTexturePro(rndr.texture,
+		{0,0,(float)renderw,(float)-renderh},{0,0,(float)GetScreenWidth(),(float)GetScreenHeight()}
+	,
+	{0,0},0,WHITE
+	);
+	EndShaderMode();
 	EndDrawing();
+	
 	clearchanged();
+	
 }
 
 void updateclra() {

@@ -1,6 +1,6 @@
 #version 330 core
 in vec2 fragTexCoord;
-in vec4 fragColor;
+uniform vec4 fragColor;
 in vec3 normal;
 in vec3 pos;
 uniform sampler2D tilemap;
@@ -112,7 +112,7 @@ void main(){
 		return;
 	}
 	if(rendermode==3){
-		FragColor=textured();
+		FragColor=textured()*fragColor*1.4;
 	}else if(rendermode==2){
 		FragColor=triplanar();
 	}else if(rendermode==1){

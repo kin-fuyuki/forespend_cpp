@@ -3,7 +3,7 @@
 #ifdef mobile
 #define GRAPHICS_API_OPENGL_ES3
 #else
-#define GRAPHICS_API_OPENGL_33
+#define GRAPHICS_API_OPENGL_21
 #endif
 #include<raylib.h>
 #include <rlgl.h>

@@ -1,10 +1,10 @@
 // 64 biomes
 /*
-vertical=heat
-horizontal=humidity
 
 ~!~⁡		⁣⁢~!white⁢~!brightbluebg																				 	~!!~
 																														
+vertical=heat																											
+horizontal=humidity																										
 																														
 	╔════════════════════════════════════════════════════════════════════════════════════════════════════|-|H|X|╗		
 	║ biomes table																								║		
@@ -28,8 +28,8 @@ horizontal=humidity
 																														
 																														
 ~!~!!white	⁡!!brightbluebg																	  						 ~!!~
-
 */
+
 unsigned char colddesert(int x,int z,unsigned char population);
 unsigned char permafrost(int x,int z,unsigned char population);
 unsigned char snowyhills(int x,int z,unsigned char population);
