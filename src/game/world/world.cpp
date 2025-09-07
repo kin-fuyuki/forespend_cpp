@@ -19,6 +19,7 @@ FastNoiseLite heatnoise;
 FastNoiseLite populationnoise;
 float daycol[4]={.8,.8,.8,.8};
 char daytime=2;
+float hourcycle=0.;
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -38,7 +39,7 @@ map::map(){
 }
 Material tilemat;
 Texture2D tilesheet;
-int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc;
+int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc,camloc;
 Matrix model=Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
 
 Material basicmat;
@@ -73,7 +74,7 @@ void map::init(){
 	modelloc = GetShaderLocation(tilemat.shader, "modelmat");
 	sizeloc = GetShaderLocation(tilemat.shader, "size");
 	fragcolorloc = GetShaderLocation(tilemat.shader, "fragColor");
-	
+	camloc = GetShaderLocation(tilemat.shader, "campos");
 	colsloc = GetShaderLocation(tilemat.shader, "cols");
 	fliploc = GetShaderLocation(tilemat.shader, "flip");
 	echo("meshcount %i",worldmodel.meshCount);
@@ -114,6 +115,7 @@ float playerrotx=0;
 float playerroty=150;
 
 void map::render(){
+	float campos[3]={camera.position.x,camera.position.y,camera.position.z};
 	Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
 	float aspect = (float)renderw / (float)renderh;
 	Matrix projection = MatrixPerspective(80, aspect, .2, 4000.0);
@@ -144,6 +146,7 @@ void map::render(){
         (float)renderw, 
         (float)renderh
     };
+	
 	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
 	BeginMode3D(camera);
 	rlEnableColorBlend();
@@ -152,6 +155,7 @@ void map::render(){
 	SetShaderValueTexture(tilemat.shader, sheetloc, tilesheet);
 	SetShaderValue(tilemat.shader, colsloc, &cols, SHADER_UNIFORM_INT);
 	SetShaderValue(tilemat.shader, sizeloc, worldSizeV, SHADER_UNIFORM_VEC2);
+	SetShaderValue(tilemat.shader, camloc, campos, SHADER_UNIFORM_VEC3);
 	SetShaderValueMatrix(tilemat.shader,modelloc, model);
 	SetShaderValueMatrix(tilemat.shader,MVPloc, mvp);
 	rlDisableBackfaceCulling();
@@ -164,6 +168,7 @@ void map::render(){
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);
+	DrawTexture(skytexture,0,0,WHITE);
 	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
 	DrawText(pos.c_str(), 0, 0, 32, WHITE);
 	DrawText(std::to_string(GetFPS()).c_str(), 0, 36, 32, WHITE);
@@ -173,28 +178,57 @@ int texturesupdt=120;
 float y=-0.1;
 void updatetextures();
 bool drawnworld=true;
+bool headdown=false;
+float headbob=0;
+bool onsurface=true;
+#define BOBMAX 0.15f
+float yaccel=0.f;
 void map::update(){
 	if (mustupdate==true){
 		updatechunks();
 		mustupdate=false;
-	
 	}
+	char currenttile=tiles[(int)player.x+size*(int)player.z];
+	bool onwater=currenttile>=250||(currenttile>=245&&player.y>=1.0);
+	bool onground=(onwater
+? player.y<=0.
+: player.y<=1.
+);
 	float turnspeed=1.f;
 	if (IsKeyPressed(KEY_F12)){
 		mustupdate=true;
 	}
-	float movespeed=.2f*(1.+10*
-		(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT)));
+	bool sprinting=(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT));
+	float movespeed=.01f*(1.+10* sprinting);
+	bool crouching=(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL));
 	float camx=
 			IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
 	float camy=
 			IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed;
+	float mx=IsKeyDown(KEY_W)*movespeed - IsKeyDown(KEY_S)*movespeed;
+	float my=IsKeyDown(KEY_D)*movespeed - IsKeyDown(KEY_A)*movespeed;
+	
+	if (headbob<-0.05f){
+		headdown=false;
+	}else if (headbob>0.05f){
+		headdown=true;
+	}
+	float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
+	float bob=headdown?-totalspeed/4:totalspeed/4;
+	headbob+=bob;
+	
+	yaccel=onground?0.f:
+		yaccel<=-1.?-1.:
+		yaccel-0.01f;
+	yaccel=(IsKeyDown(KEY_SPACE)
+	&&onground&&!onwater
+)?.2:yaccel;
 	UpdateCameraPro(&camera,
 		(Vector3){
-			IsKeyDown(KEY_W)*movespeed - IsKeyDown(KEY_S)*movespeed,
-			IsKeyDown(KEY_D)*movespeed - IsKeyDown(KEY_A)*movespeed,
-			//0.0f
-			(IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed)*1
+			mx,	my,
+			bob+
+			yaccel
+//			+	(IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed)*1
 		},
 		(Vector3){
 			camx, 
@@ -204,7 +238,6 @@ void map::update(){
 		},
 		0
 	);
-	
 	playerrotx+=camx;
 	
 	if ((playerroty>179&&camy>0)||(playerroty<101&&camy<0)){
@@ -214,7 +247,7 @@ void map::update(){
 	//echo ("playerrotx %f playerroty %f",playerrotx,playerroty);
 	int prevy=(int)player.y;
 	player.x=camera.position.x;
-	player.y=camera.position.y-2;
+	player.y=camera.position.y-(1.6+headbob);
 	player.z=camera.position.z;
 	if (player.y>=150&&prevy<150){
 	tilesheet = LoadTexture("res/images/tilesheetl1.png");
@@ -258,7 +291,11 @@ void map::update(){
 		texturesupdt=0;
 		y+=0.1;
 		updatetextures();
-//		daytime=daytime==5?daytime=0:daytime+1;
+		hourcycle+=0.1;
+		if (hourcycle>=1.){
+			hourcycle=0;
+			daytime=daytime==5?daytime=0:daytime+1;
+		}
 	}
 }
 void map::close(){
@@ -413,7 +450,6 @@ var daynight=[
 	["181818","1c1c1c","000000"],#4am
 	]
 */
-
 #define SKY1 0.0f
 #define SKY2 0.8f
 #define SKY3 0.1f
@@ -428,6 +464,18 @@ std::map<float, Color> daynight[6] = {
 
 float dragx=0.f;
 float dragz=0.f;
+short rows[8][2]={
+	{0,10},
+	{10,20},
+	{20,30},
+	{30,40},
+	{40,50},
+	{50,60},
+	{60,70},
+	{70,80}
+};
+char row=0;
+bool first=true;
 void updatetextures(){
 	dragx+=0.5f;
 	dragz+=1.5f;
@@ -651,58 +699,63 @@ void updatetextures(){
 	
 	texturenoise.SetFrequency(0.5);
 	texturenoise.SetFractalOctaves(4);
-daycol[0] = (
-	((float)daynight[daytime][SKY3].r) + ((float)daynight[daytime][SKY1].r))/ 512.0f;
-daycol[1] = (
-	((float)daynight[daytime][SKY3].g) + ((float)daynight[daytime][SKY1].g))/ 512.0f;
-daycol[2] = (
-	((float)daynight[daytime][SKY3].b) + ((float)daynight[daytime][SKY1].b))/ 512.0f;
 
 
 int width = skybox.width;
-int height = skybox.height;
-float noiseScale = 3.0f;
-float yDepth = 0.02f;
-
-
-for (int z = 0; z < height; ++z) {
-    float v = (float)z / (float)(height - 1);
+int height = first?skybox.height:rows[row][1];
+int startx=0;
+int startz=first?100:rows[row][0];
+float sca = 3.0f;
+float yd = 0.02f;
+char nextdaytime=daytime==5?0:daytime+1;
+Color sky1=ColorLerp(daynight[daytime][SKY1], daynight[nextdaytime][SKY1], hourcycle);
+Color sky2=ColorLerp(daynight[daytime][SKY2], daynight[nextdaytime][SKY2], hourcycle);
+Color sky3=ColorLerp(daynight[daytime][SKY3], daynight[nextdaytime][SKY3], hourcycle);
+first=false;
+daycol[0] = (
+	((float)sky3.r) + ((float)sky1.r))/ 512.0f;
+daycol[1] = (
+	((float)sky3.g) + ((float)sky1.g))/ 512.0f;
+daycol[2] = (
+	((float)sky3.b) + ((float)sky1.b))/ 512.f;
+for (int z = startz; z < height; ++z) {
+    float v = (float)z / (float)(100 - 1);
     float phi = (v - 0.5f) * PI;
 
-    for (int x = 0; x < width; ++x) {
-        float u = (float)x / (float)width;
+    for (int x = startx; x < width; ++x) {
+        float u = (float)x / (float)skybox.width;
         float theta = u * 2.0f * PI;
 
-        float cosPhi = cosf(phi);
-        float vx = cosPhi * cosf(theta);
+        float cph = cosf(phi);
+        float vx = cph * cosf(theta);
         float vy = sinf(phi);
-        float vz = cosPhi * sinf(theta);
+        float vz = cph * sinf(theta);
         float idx = texturenoise.GetNoise(
-vx * noiseScale, vy * noiseScale * 2,vz * noiseScale, y * yDepth);
+vx * sca, vy * sca * 2,vz * sca, y * yd);
 
         Color r;
         if (idx >= SKY2) {
-            r = daynight[daytime][SKY1];
+            r = sky1;
         } else if (idx >= SKY3) {
             float denom = (SKY2 - SKY3);
             float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
             t = fmaxf(0.0f, fminf(1.0f, t));
-            r = ColorLerp(daynight[daytime][SKY3], daynight[daytime][SKY1], t);
+            r = ColorLerp(sky3, sky1, t);
         } else {
-            r = daynight[daytime][SKY3];
+            r = sky3;
         }
 
-        int pixIndex = (z * width + x) * 3;
-        ((unsigned char*)skybox.data)[pixIndex + 0] = r.r;
-        ((unsigned char*)skybox.data)[pixIndex + 1] = r.g;
-        ((unsigned char*)skybox.data)[pixIndex + 2] = r.b;
+        int px = (z * skybox.width + x) * 3;
+        ((unsigned char*)skybox.data)[px + 0] = r.r;
+        ((unsigned char*)skybox.data)[px + 1] = r.g;
+        ((unsigned char*)skybox.data)[px + 2] = r.b;
     }
 }
 
 
-
+	row=++row==9?0:row;
 	long end = __rdtsc();
-	//success ("cycles: %s", FORMAT_NUM(end - start));
+	success ("cycles: %s", FORMAT_NUM(end - start));
 	
 	UpdateTexture(tilesheet, sheet.data);
 	UpdateTexture(skytexture, skybox.data);

@@ -26,10 +26,10 @@ for f in $cfiles; do
 		echo $flags -c "$f" $incs -o build/objs/linux/"$obj"
         clang++ $flags -c "$f" $incs -o build/objs/linux/"$obj"
 		echo $flags "$f" $incs -o build/objs/windows/"$obj" $windowsflags
-		clang++ $flags -c "$f" $incs -o build/objs/windows/"$obj" $windowsflags
-		$api21 -fPIC $flags -c "$f" $incs -o build/objs/android/5/"$obj"
-		$api28 -fPIC $flags -c "$f" $incs -o build/objs/android/9/"$obj"
-		$api33 -fPIC $flags -c "$f" $incs -o build/objs/android/13/"$obj"
+#		clang++ $flags -c "$f" $incs -o build/objs/windows/"$obj" $windowsflags
+#		$api21 -fPIC $flags -c "$f" $incs -o build/objs/android/5/"$obj"
+#		$api28 -fPIC $flags -c "$f" $incs -o build/objs/android/9/"$obj"
+#		$api33 -fPIC $flags -c "$f" $incs -o build/objs/android/13/"$obj"
         if [ $? -ne 0 ]; then
             read -p "press enter to continue..." key
             exit 1

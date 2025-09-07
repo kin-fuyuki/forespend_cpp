@@ -1,7 +1,7 @@
 #include "game.h"
 #include "../term.h"
-short	renderw=380;
-short	renderh=240;
+short	renderw=380*2;
+short	renderh=240*2;
 Shader shd;GRAPHICS_API_OPENGL_33
 RenderTexture2D rndr;
 void init() {
@@ -14,7 +14,7 @@ void init() {
 	current->init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
-	rndr=LoadRenderTexture(380,240);
+	rndr=LoadRenderTexture(renderw,renderh);
 }
 void close() {
 	current->close();
@@ -41,9 +41,7 @@ void updateclra();
 void render() {
 	updateclra();
 
-	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)){
-		
-		close();}
+	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)) close();
 	current->update();
 	SetTraceLogLevel(LOG_ERROR);
 	BeginTextureMode(rndr);

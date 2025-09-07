@@ -5,6 +5,7 @@ attribute vec4 vertexColor;
 attribute vec3 vertexNormal;
 
 out vec2 fragTexCoord;
+out vec3 fragWorldPos;
 out vec3 normal;
 out vec3 pos;
 out int level;

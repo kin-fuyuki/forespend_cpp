@@ -3,11 +3,13 @@ in vec2 fragTexCoord;
 uniform vec4 fragColor;
 in vec3 normal;
 in vec3 pos;
+uniform vec3 campos;
 uniform sampler2D tilemap;
 uniform sampler2D tilesheet;
 uniform vec2 size;
 uniform int cols;
 out vec4 FragColor;
+float dist;
 vec3 n=normalize(normal);
 bool lava=false;
 vec4 directional(vec4 c){
@@ -107,6 +109,9 @@ vec4 triplanar(){
 }
 int rendermode=3;
 void main(){
+vec3 cpos=vec3(campos.x,0,campos.z);
+vec3 wpos=pos*4;
+float dist = length(cpos - wpos);
 	if (fragColor.r==1. && fragColor.b==1.){
 		FragColor=white();
 		return;
@@ -120,4 +125,6 @@ void main(){
 	}else{
 		FragColor=white();
 	}
+//	float fogFactor = 1.0 / exp( (dist * 1) * (dist * 1));
+	FragColor.a=1/exp((dist*0.0008)*(dist*0.0008));
 }
