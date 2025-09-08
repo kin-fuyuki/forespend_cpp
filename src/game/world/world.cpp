@@ -238,8 +238,11 @@ void map::update(){
 	float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
 	float bob=headdown?-totalspeed/4:totalspeed/4;
 	headbob+=bob;
-	float targetx=player.x+mx;
-	float targetz=player.z+my;
+	float tcos=cos(player.yaw);
+	float tsin=sin(player.yaw);
+	
+	float targetx=player.x+((mx+0.3)*tcos-(my+0.3)*tsin);
+	float targetz=player.z+((mx+0.3)*tsin+(my+0.3)*tcos);
 	short ttx=((short)(targetx/4)+512);
 	short ttz=1024-((short)(targetz/4.)+512);
 	if (targetz>0)ttz--; // wont work cuz ur not taking rotation into consideration
@@ -248,8 +251,9 @@ void map::update(){
 	if (currenttile!=targettile){
 		echo("currenttile %i targettile %i",currenttile,targettile);
 	}
-	if (currenttile>=250&&targettile<250){
+	if (currenttile>=250&&targettile<250&&player.y<1.){
 		mx=0;my=0;
+		yaccel=0.01f;
 	}
 	UpdateCameraPro(&camera,
 		(Vector3){
@@ -277,6 +281,8 @@ void map::update(){
 	player.x=camera.position.x;
 	player.y=camera.position.y-(1.6+headbob);
 	player.z=camera.position.z;
+	Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+	player.yaw=atan2f(forward.z, forward.x);
 	if (player.y>=150&&prevy<150){
 	tilesheet = LoadTexture("res/images/tilesheetl1.png");
 	sheet=LoadImageFromTexture(tilesheet);
@@ -313,7 +319,6 @@ void map::update(){
 	sheet=LoadImageFromTexture(tilesheet);
 	updatetextures();
 	}
-	
 	texturesupdt++;
 	if (texturesupdt>60){
 		texturesupdt=0;
