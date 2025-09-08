@@ -1,7 +1,7 @@
 #include "game.h"
 #include "../term.h"
-short	renderw=380*2;
-short	renderh=240*2;
+short	renderw=380*4;
+short	renderh=240*4;
 Shader shd;GRAPHICS_API_OPENGL_33
 RenderTexture2D rndr;
 void init() {

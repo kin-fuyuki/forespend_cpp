@@ -49,9 +49,10 @@ FastNoiseLite texturenoise;
 Image sheet;
 Image skybox;
 Texture skytexture;
+Texture playercursor;
 void map::init(){
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
-	camera.position = (Vector3){0.0f, 1.6f, 0.0f};
+	camera.position = (Vector3){0.0f, 1.3f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
 	camera.fovy = 80.0f;
@@ -63,6 +64,7 @@ void map::init(){
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
+	playercursor=LoadTexture("res/images/playercursor.png");
 	rlSetClipPlanes(.2, 4000.0);
 
 	tilesheet = LoadTexture("res/images/tilesheet.png");
@@ -113,7 +115,8 @@ map::~map(){
 int flip=0;
 float playerrotx=0;
 float playerroty=150;
-
+unsigned char currenttile;
+short ptx,ptz;
 void map::render(){
 	float campos[3]={camera.position.x,camera.position.y,camera.position.z};
 	Matrix view = MatrixLookAt(camera.position, camera.target, camera.up);
@@ -168,8 +171,11 @@ void map::render(){
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);
-	DrawTexture(skytexture,0,0,WHITE);
-	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z);
+	//DrawTexture(skytexture,0,0,WHITE);
+	//DrawTexture(tilemapp,0,0,WHITE);
+	//DrawTexture(playercursor,ptx,ptz,WHITE);
+	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z)
++"\n\n tile: "+std::to_string(((int)currenttile))+" worldx: "+std::to_string((int)ptx)+" worldz: "+std::to_string((int)ptz);
 	DrawText(pos.c_str(), 0, 0, 32, WHITE);
 	DrawText(std::to_string(GetFPS()).c_str(), 0, 36, 32, WHITE);
 	
@@ -188,10 +194,14 @@ void map::update(){
 		updatechunks();
 		mustupdate=false;
 	}
-	char currenttile=tiles[(int)player.x+size*(int)player.z];
+	ptx=((short)(player.x/4)+512);
+	ptz=1024-((short)(player.z/4.)+512);
+	if (player.z>0)ptz--;
+	if (player.x<0)ptx--;
+	currenttile=tiles[(int)ptx+size*(int)ptz];
 	bool onwater=currenttile>=250||(currenttile>=245&&player.y>=1.0);
 	bool onground=(onwater
-? player.y<=0.
+? player.y<=-0.8
 : player.y<=1.
 );
 	float turnspeed=1.f;
@@ -200,13 +210,25 @@ void map::update(){
 	}
 	bool sprinting=(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT));
 	float movespeed=.01f*(1.+10* sprinting);
+	if (onwater&&onground){
+		movespeed/=4;
+	}
 	bool crouching=(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL));
 	float camx=
 			IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
 	float camy=
 			IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed;
-	float mx=IsKeyDown(KEY_W)*movespeed - IsKeyDown(KEY_S)*movespeed;
-	float my=IsKeyDown(KEY_D)*movespeed - IsKeyDown(KEY_A)*movespeed;
+			
+	
+	yaccel=onground?0.f:
+		yaccel<=-1.?-1.:
+		yaccel-0.005f;
+	yaccel=(IsKeyDown(KEY_SPACE)
+	&&onground&&!onwater
+)?.08:yaccel;		
+	float jumpboost=(yaccel!=0.f)+1.;
+	float mx=(IsKeyDown(KEY_W) - IsKeyDown(KEY_S))*movespeed*jumpboost;
+	float my=(IsKeyDown(KEY_D) - IsKeyDown(KEY_A))*movespeed*jumpboost;
 	
 	if (headbob<-0.05f){
 		headdown=false;
@@ -216,13 +238,19 @@ void map::update(){
 	float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
 	float bob=headdown?-totalspeed/4:totalspeed/4;
 	headbob+=bob;
-	
-	yaccel=onground?0.f:
-		yaccel<=-1.?-1.:
-		yaccel-0.01f;
-	yaccel=(IsKeyDown(KEY_SPACE)
-	&&onground&&!onwater
-)?.2:yaccel;
+	float targetx=player.x+mx;
+	float targetz=player.z+my;
+	short ttx=((short)(targetx/4)+512);
+	short ttz=1024-((short)(targetz/4.)+512);
+	if (targetz>0)ttz--; // wont work cuz ur not taking rotation into consideration
+	if (targetx<0)ttx--;
+	unsigned char targettile=tiles[(int)ttx+size*(int)ttz];
+	if (currenttile!=targettile){
+		echo("currenttile %i targettile %i",currenttile,targettile);
+	}
+	if (currenttile>=250&&targettile<250){
+		mx=0;my=0;
+	}
 	UpdateCameraPro(&camera,
 		(Vector3){
 			mx,	my,
@@ -389,8 +417,12 @@ void map::updatechunks() {
 	long setstart = __rdtsc();
 	long setend = __rdtsc();
 	long end = __rdtsc();
-	if (drawnworld)
+	if (drawnworld){
 	tilemaptx=LoadImage("res/images/coolworld.png");
+	for (int i = 0; i < size*size; i++) {
+		tiles[i]=((unsigned char*)tilemaptx.data)[i];
+	}
+}
 	bool naturallygray=tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 	echo ("size: %s, format: %s", FORMAT_NUM(tilemaptx.width), FORMAT_NUM(tilemaptx.format));
 	
