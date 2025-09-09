@@ -49,10 +49,6 @@ vec4 textured(){
 		float previousz=texture(tilemap, vec2(fragTexCoord.x,fragTexCoord.y-minus)).r;
 		int previousxidx = int(previousx * 255.0);
 		int previouszidx = int(previousz * 255.0);
-		float nextx=texture(tilemap, vec2(fragTexCoord.x+minus,fragTexCoord.y)).r;
-		float nextz=texture(tilemap, vec2(fragTexCoord.x,fragTexCoord.y+minus)).r;
-		bool nextxidx = int(nextx * 255.0)<250;
-		bool nextzidx = int(nextz * 255.0)<250;
 		bool prevxidx=previousxidx<250;
 		bool prevzidx=previouszidx<250;
 		bool isterrain=1!=1;

@@ -1,60 +1,42 @@
-#include"../../config.h"
-#include"../io.h"
-#ifdef mobile
-#define GRAPHICS_API_OPENGL_ES3
-#else
-#define GRAPHICS_API_OPENGL_21
-#endif
-#include<raylib.h>
-#include <rlgl.h>
-#include<vector>
-#include<map>
-class scene{
-public:
+#include "scenes.h"
+#include <raymath.h>
+#include "../../libs/simplex.h"
 
-    virtual void init() {}
-    virtual void render() {}
-    virtual void update() {}
-    virtual void close() {}
-};
-struct entity{
-	int 	qx,qz;
-	float 	x,y,z;
-	float 	yaw,pitch,roll;
-	int 	id;
-};
-class map:public scene{
-	Color skycolor;
-	unsigned char*	tiles;
-	std::vector<unsigned char>	buildings;
-	int							data[4];
+void updatetextures();
 
-public:
-	map();
-	~map();
-	
-	bool 	mustupdate;
-	short	size;
-	short	world;
-	bool	paused;
-	std::vector<entity> entities;
-	entity				player;
-	Camera3D			camera;
-	
-	void init()		override;
-	void update()	override;
-	void render()	override;
-	void close() 	override;
+extern	int texturesupdt;
+extern	float y;
+extern	bool drawnworld;
+extern	bool headdown;
+extern	float headbob;
+extern	bool onsurface;
+#define BOBMAX 0.15f
+extern	float yaccel;
+extern	short ptx,ptz;
+extern	unsigned char currenttile;
 
-	void updatechunks();
-};
 
-class mainmenu:public scene{
-public:
-	mainmenu();
-	~mainmenu();
-	void init()		override;
-	void update() 	override;
-	void render()	override;
-	void close()	override;
-};
+extern	int flip;
+extern	float playerrotx, playerroty;
+
+extern	Model worldmodel;
+extern	Material generator;
+extern	Image tilemaptx;
+extern	FastNoiseLite humiditynoise;
+extern	FastNoiseLite heatnoise;
+extern	FastNoiseLite populationnoise;
+extern	float daycol[4];
+extern	char daytime;
+extern	float hourcycle;
+extern	Material tilemat;
+extern	Texture2D tilesheet;
+extern	int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc,camloc;
+extern	Matrix model;
+extern	Material basicmat;
+extern	Texture2D tilemapp;
+extern	float worldSizeV[2];
+extern	FastNoiseLite texturenoise;
+extern	Image sheet;
+extern	Image skybox;
+extern	Texture skytexture;
+extern	Texture playercursor;

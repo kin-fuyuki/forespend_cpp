@@ -7,17 +7,18 @@ RenderTexture2D rndr;
 void init() {
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
-	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
-	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	//SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
-	current->init();
+	//current->init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	rndr=LoadRenderTexture(renderw,renderh);
 }
 void close() {
 	current->close();
+	
 	CloseWindow();
 	cfg.save();
 }
@@ -42,11 +43,11 @@ void render() {
 	updateclra();
 
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)) close();
-	current->update();
+	//current->update();
 	SetTraceLogLevel(LOG_ERROR);
 	BeginTextureMode(rndr);
 	ClearBackground(clra);
-	current->render();
+	//current->render();
 	EndTextureMode();
 	
 	BeginDrawing();
