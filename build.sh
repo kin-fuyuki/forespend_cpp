@@ -6,4 +6,4 @@ make windows
 #make web
 
 
-sleep 1
+sleep 5

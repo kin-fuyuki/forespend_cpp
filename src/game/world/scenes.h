@@ -24,6 +24,19 @@ struct entity{
 	float 	yaw,pitch,roll;
 	int 	id;
 };
+class data{
+	
+};
+class playerstats:public data{
+public:
+	float health;
+	float stamina;
+	float mana;
+	float energy;
+	float fatigue;
+	float radioactivity;
+	float xp;
+};
 class map:public scene{
 	Color skycolor;
 	unsigned char*	tiles;
@@ -40,6 +53,7 @@ public:
 	bool	paused;
 	std::vector<entity> entities;
 	entity				player;
+	playerstats			stats;
 	Camera3D			camera;
 	
 	void init()		override;

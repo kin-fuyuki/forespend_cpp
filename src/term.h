@@ -2,6 +2,7 @@
 void echo(char* info,...);
 void warning( char * info,...);
 void error( char * info,...);
+void fatal( char * info,...);
 void success(char * info , ...);
 void message(char * info , ...);
 void startup(char* game,char*version);

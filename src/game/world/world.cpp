@@ -11,6 +11,7 @@ float hourcycle=0.;
 Material tilemat;
 Texture2D tilesheet;
 int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc,camloc;
+int timeloc,healthloc,staminaloc,manaloc,energyloc,fatigueloc,radioloc,xploc;
 Matrix model=Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
 Material basicmat;
 Texture2D tilemapp;
@@ -19,7 +20,9 @@ Image sheet;
 Image skybox;
 Texture skytexture;
 Texture playercursor;
-
+Texture toolbar;
+Shader toolbarshader;
+Font debugfont;
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -36,6 +39,7 @@ map::map(){
 	data[0]=0;
 	data[1]=0;
 	data[2]=0;
+	stats.health=stats.stamina=stats.mana=stats.energy=stats.fatigue=stats.radioactivity=stats.xp=1.0f;
 }
 void map::init(){
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
@@ -51,7 +55,10 @@ void map::init(){
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
+	toolbarshader=LoadShader("res/shaders/toolbar.vs","res/shaders/toolbar.fs");
 	playercursor=LoadTexture("res/images/playercursor.png");
+	debugfont=LoadFont("res/fonts/kipsynth.ttf");
+	toolbar=LoadTexture("res/images/menubar.png");
 	rlSetClipPlanes(.2, 4000.0);
 
 	tilesheet = LoadTexture("res/images/tilesheet.png");
@@ -66,6 +73,14 @@ void map::init(){
 	camloc = GetShaderLocation(tilemat.shader, "campos");
 	colsloc = GetShaderLocation(tilemat.shader, "cols");
 	fliploc = GetShaderLocation(tilemat.shader, "flip");
+	timeloc = GetShaderLocation(toolbarshader, "time");
+	healthloc = GetShaderLocation(toolbarshader, "health");
+	staminaloc = GetShaderLocation(toolbarshader, "stamina");
+	manaloc = GetShaderLocation(toolbarshader, "mana");
+	energyloc = GetShaderLocation(toolbarshader, "energy");
+	fatigueloc = GetShaderLocation(toolbarshader, "fatigue");
+	radioloc = GetShaderLocation(toolbarshader, "radioactivity");
+	xploc = GetShaderLocation(toolbarshader, "xp");
 	echo("meshcount %i",worldmodel.meshCount);
 	echo("materialcount %i",worldmodel.materialCount);
 	basicmat=LoadMaterialDefault();
@@ -86,7 +101,6 @@ void map::init(){
 	heatnoise.SetFrequency(0.1);
 	heatnoise.SetNoiseType(FastNoiseLite::NoiseType::NoiseType_Value);
 	heatnoise.SetDomainWarpType(FastNoiseLite::DomainWarpType::DomainWarpType_BasicGrid);
-	
 	populationnoise.SetFractalType(FastNoiseLite::FractalType::FractalType_None);
 	populationnoise.SetFractalOctaves(1);
 	populationnoise.SetFrequency(0.1);

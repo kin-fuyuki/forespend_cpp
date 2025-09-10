@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string>
 #include "term.h"
-ErrorLevel level={4};
+ErrorLevel level={1};
 
 
 #define WHITE   "\033[0m"       /* White */
@@ -15,6 +15,7 @@ ErrorLevel level={4};
 #define MAGENTA "\033[35m"      /* Magenta */
 #define CYAN    "\033[36m"      /* Cyan */
 #define WHITE   "\033[37m"      /* White */
+#define BGRED   "\033[41m"      /* Red */
 #define BOLDBLACK   "\033[1m\033[30m"      /* Bold Black */
 #define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
 #define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
@@ -47,6 +48,10 @@ void warning( char * info,...){
    va_list arg;
    std::string mixer=YELLOW;ending
 }
+}
+void fatal( char * info,...){
+   va_list arg;
+   std::string mixer=BOLDWHITE+std::string(BGRED);ending
 }
 void error( char * info,...){
    if (level.value>=0)

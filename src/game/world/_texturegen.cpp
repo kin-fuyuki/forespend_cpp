@@ -42,7 +42,7 @@ var daynight=[
 */
 #define SKY1 0.0f
 #define SKY2 0.8f
-#define SKY3 0.1f
+#define SKY3 0.4f
 std::map<float, Color> daynight[6] = {
 	{{SKY1,Color{121,121,121,255}},{SKY2,Color{28,28,28,255}},{SKY3,Color{30,0,21,255}}},
 	{{SKY1,Color{192,192,192,255}},{SKY2,Color{64,64,64,255}},{SKY3,Color{0,110,90,255}}},
@@ -54,18 +54,20 @@ std::map<float, Color> daynight[6] = {
 
 float dragx=0.f;
 float dragz=0.f;
+
 short rows[8][2]={
-	{0,10},
-	{10,20},
-	{20,30},
-	{30,40},
-	{40,50},
-	{50,60},
-	{60,70},
-	{70,80}
+	{0,11},
+	{10,21},
+	{20,31},
+	{30,41},
+	{40,51},
+	{50,61},
+	{60,71},
+	{70,81}
 };
 char row=0;
 bool first=true;
+void gensky(int startx, int startz, int width, int height);
 void updatetextures(){
 	dragx+=0.5f;
 	dragz+=1.5f;
@@ -293,60 +295,112 @@ void updatetextures(){
 
 int width = skybox.width;
 int height = first?skybox.height:rows[row][1];
+//int height =80;
+
 int startx=0;
-int startz=first?100:rows[row][0];
-float sca = 3.0f;
-float yd = 0.02f;
-char nextdaytime=daytime==5?0:daytime+1;
-Color sky1=ColorLerp(daynight[daytime][SKY1], daynight[nextdaytime][SKY1], hourcycle);
-Color sky2=ColorLerp(daynight[daytime][SKY2], daynight[nextdaytime][SKY2], hourcycle);
-Color sky3=ColorLerp(daynight[daytime][SKY3], daynight[nextdaytime][SKY3], hourcycle);
-daycol[0] = (
-	((float)sky3.r) + ((float)sky1.r))/ 512.0f;
-daycol[1] = (
-	((float)sky3.g) + ((float)sky1.g))/ 512.0f;
-daycol[2] = (
-	((float)sky3.b) + ((float)sky1.b))/ 512.f;
-for (int z = startz; z < height; ++z) {
-    float v = (float)z / (float)(100 - 1);
-    float phi = (v - 0.5f) * PI;
-
-    for (int x = startx; x < width; ++x) {
-        float u = (float)x / (float)skybox.width;
-        float theta = u * 2.0f * PI;
-
-        float cph = cosf(phi);
-        float vx = cph * cosf(theta);
-        float vy = sinf(phi);
-        float vz = cph * sinf(theta);
-        float idx = texturenoise.GetNoise(
-vx * sca, vy * sca * 2,vz * sca, y * yd);
-
-        Color r;
-        if (idx >= SKY2) {
-            r = sky1;
-        } else if (idx >= SKY3) {
-            float denom = (SKY2 - SKY3);
-            float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
-            t = fmaxf(0.0f, fminf(1.0f, t));
-            r = ColorLerp(sky3, sky1, t);
-        } else {
-            r = sky3;
-        }
-
-        int px = (z * skybox.width + x) * 3;
-        ((unsigned char*)skybox.data)[px + 0] = r.r;
-        ((unsigned char*)skybox.data)[px + 1] = r.g;
-        ((unsigned char*)skybox.data)[px + 2] = r.b;
-    }
-}
+int startz=first?0:rows[row][0];
+//int startz=0;
+	if (first){
+	for (int i=0;i<3;i++){
+		gensky(startx,startz,width,height);
+	}}else{
+		gensky(startx,startz,width,height);
+	}
 
 
-first=false;
+
 	row=++row==9?0:row;
+first=false;
 	long end = __rdtsc();
 	success("cycles: %s", FORMAT_NUM(end - start));
 	
 	UpdateTexture(tilesheet, sheet.data);
 	UpdateTexture(skytexture, skybox.data);
+}
+
+
+void gensky(int startx, int startz, int width, int height) {
+	float sca = 3.0f;
+	float yd = 0.02f;
+	char nextdaytime=daytime==5?0:daytime+1;
+	Color sky1=ColorLerp(daynight[daytime][SKY1], daynight[nextdaytime][SKY1], hourcycle);
+	Color sky2=ColorLerp(daynight[daytime][SKY2], daynight[nextdaytime][SKY2], hourcycle);
+	Color sky3=ColorLerp(daynight[daytime][SKY3], daynight[nextdaytime][SKY3], hourcycle);
+	daycol[0] = (
+		((float)sky3.r) + ((float)sky1.r))/ 512.0f;
+	daycol[1] = (
+		((float)sky3.g) + ((float)sky1.g))/ 512.0f;
+	daycol[2] = (
+		((float)sky3.b) + ((float)sky1.b))/ 512.f;
+		for (int z = startz; z < height; ++z) {
+	float v = (float)z / (float)(100 - 1);
+	float phi = (v - 0.5f) * PI;
+	float cph = cosf(phi);
+	float vy = sinf(phi);
+	
+	bool flipflopz = (z % 2 == 0);
+ 
+	
+ for (int x = startx; x < width; ++x) {
+  bool flipflopx = (x % 2 == 0);
+  Color r;
+  
+  if (flipflopz && flipflopx) {
+   float u = (float)x / (float)skybox.width;
+   float theta = u * 2.0f * PI;
+   float vx = cph * cosf(theta);
+   float vz = cph * sinf(theta);
+   float idx = texturenoise.GetNoise(vx * sca, vy * sca * 2,vz * sca, y * yd);
+   if (idx >= SKY2) {
+    r = sky1;
+   } else if (idx >= SKY3) {
+    float denom = (SKY2 - SKY3);
+    float t = denom != 0.0f ? (idx - SKY3) / denom : 0.0f;
+    t = fmaxf(0.0f, fminf(1.0f, t));
+    r = ColorLerp(sky3, sky1, t);
+   } else {
+    r = sky3;
+   }
+  } else if (flipflopz && !flipflopx) {
+   Color left = {0,0,0};
+   Color right = {0,0,0};
+   if (x > 0) {
+    int px_left = (z * skybox.width + (x-1)) * 3;
+    left.r = ((unsigned char*)skybox.data)[px_left + 0];
+    left.g = ((unsigned char*)skybox.data)[px_left + 1];
+    left.b = ((unsigned char*)skybox.data)[px_left + 2];
+   }
+   if (x < width - 1) {
+    int px_right = (z * skybox.width + (x+1)) * 3;
+    right.r = ((unsigned char*)skybox.data)[px_right + 0];
+    right.g = ((unsigned char*)skybox.data)[px_right + 1];
+    right.b = ((unsigned char*)skybox.data)[px_right + 2];
+   }
+   r = ColorLerp(left, right, 0.5f);
+  } else {
+   Color above = {0,0,0};
+   Color below = {0,0,0};
+   if (z > 0) {
+    int px_above = ((z-1) * skybox.width + x) * 3;
+    above.r = ((unsigned char*)skybox.data)[px_above + 0];
+    above.g = ((unsigned char*)skybox.data)[px_above + 1];
+    above.b = ((unsigned char*)skybox.data)[px_above + 2];
+   }
+   if (z < height - 1) {
+    int px_below = ((z+1) * skybox.width + x) * 3;
+    below.r = ((unsigned char*)skybox.data)[px_below + 0];
+    below.g = ((unsigned char*)skybox.data)[px_below + 1];
+    below.b = ((unsigned char*)skybox.data)[px_below + 2];
+   }
+   r = ColorLerp(above, below, 0.5f);
+  }
+  
+  int px = (z * skybox.width + x) * 3;
+  ((unsigned char*)skybox.data)[px + 0] = r.r;
+  ((unsigned char*)skybox.data)[px + 1] = r.g;
+  ((unsigned char*)skybox.data)[px + 2] = r.b;
+ }
+
+
+}
 }

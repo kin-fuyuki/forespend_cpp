@@ -1,5 +1,4 @@
 #include "world.h"
-
 	int texturesupdt=120;
 	float y=-0.1;
 	bool drawnworld=true;
@@ -12,6 +11,7 @@
 	unsigned char currenttile=0;
 
 
+	
 	int flip=0;
 	float playerrotx=0;
 	float playerroty=150;
@@ -57,6 +57,7 @@ void map::render(){
 	SetShaderValue(tilemat.shader, colsloc, &cols, SHADER_UNIFORM_INT);
 	SetShaderValue(tilemat.shader, sizeloc, worldSizeV, SHADER_UNIFORM_VEC2);
 	SetShaderValue(tilemat.shader, camloc, campos, SHADER_UNIFORM_VEC3);
+
 	SetShaderValueMatrix(tilemat.shader,modelloc, model);
 	SetShaderValueMatrix(tilemat.shader,MVPloc, mvp);
 	rlDisableBackfaceCulling();
@@ -72,9 +73,30 @@ void map::render(){
 	//DrawTexture(skytexture,0,0,WHITE);
 	//DrawTexture(tilemapp,0,0,WHITE);
 	//DrawTexture(playercursor,ptx,ptz,WHITE);
-	std::string pos="X: "+std::to_string((int)player.x)+" Y: "+std::to_string((int)player.y)+" Z: "+std::to_string((int)player.z)
-+"\n\n tile: "+std::to_string(((int)currenttile))+" worldx: "+std::to_string((int)ptx)+" worldz: "+std::to_string((int)ptz);
-	DrawText(pos.c_str(), 0, 0, 32, WHITE);
-	DrawText(std::to_string(GetFPS()).c_str(), 0, 36, 32, WHITE);
+	int toolbarh=((55./240.)*renderh);
+	int toolbary=renderh-toolbarh;
+	//DrawTexture(toolbar,0,toolbary,WHITE);
+	float time=GetTime();
+	SetShaderValue(toolbarshader, timeloc, &time, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, healthloc, &stats.health, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, staminaloc, &stats.stamina, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, manaloc, &stats.mana, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, energyloc, &stats.energy, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, fatigueloc, &stats.fatigue, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, radioloc, &stats.radioactivity, SHADER_UNIFORM_FLOAT);
+	SetShaderValue(toolbarshader, xploc, &stats.xp, SHADER_UNIFORM_FLOAT);
+	BeginShaderMode(toolbarshader);
+	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
+	(Rectangle){0,(float)toolbary,(float)renderw,(float)toolbarh}, Vector2{0,0}, 0, WHITE);
+	EndShaderMode();
 	
+	//fatal("toolbary %i toolbarh %i",toolbary,toolbarh);
+	std::string pos=
+""+std::to_string(GetFPS())+" version:"+VERSION
++"\nX:"+std::to_string((int)player.x)+" Y:"+std::to_string((int)player.y)+" Z:"+std::to_string((int)player.z)
++"\ntile:"+std::to_string(((int)currenttile))+" worldx:"+std::to_string((int)ptx)+" worldz:"+std::to_string((int)ptz)
++"\nspeed:"+std::to_string((int)(sped*60))+"m/s";
+	if (f1)
+	DrawTextEx(debugfont,pos.c_str(),(Vector2){0,0}, 5*scale, 3*scale, WHITE);
+	//fatal("f1 %i",f1);
 }

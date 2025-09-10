@@ -1,11 +1,27 @@
 #include"world.h"
 
+bool f1=false;
 #ifndef WORLDUPDATE
+	float sped=0.f;
+	bool statsflipflop=true;
 	void map::update(){
-		if (mustupdate==true){
+		if (IsKeyPressed(KEY_F12)){
+			mustupdate=true;
+		}if (mustupdate==true){
 			updatechunks();
 			mustupdate=false;
 		}
+		if (IsKeyReleased(KEY_F1)){
+			fatal("f1 %i",f1?1:0);
+			f1=!f1;
+		}
+		if (stats.xp>=1.f){
+			statsflipflop=false;
+		}if (stats.xp<=0.f){
+			statsflipflop=true;
+		}
+		float statspos=stats.xp+(statsflipflop?0.01f:-0.01f);
+//stats.xp=stats.health=stats.stamina=stats.mana=stats.energy=stats.fatigue=stats.radioactivity=statspos;
 		ptx=((short)(player.x/4)+512);
 		ptz=1024-((short)(player.z/4.)+512);
 		if (player.z>0)ptz--;
@@ -14,33 +30,44 @@
 		bool onwater=currenttile>=250||(currenttile>=245&&player.y>=1.0);
 		bool onground=(onwater
 	? player.y<=-0.8
-	: player.y<=1.
+	: player.y<=1.01
 	);
-		float turnspeed=1.f;
-		if (IsKeyPressed(KEY_F12)){
-			mustupdate=true;
-		}
+		
 		bool sprinting=(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT));
+		bool jumping=IsKeyDown(KEY_SPACE);
+		bool crouching=(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL));
+		float turnspeed=0.9f;
 		float movespeed=.01f*(1.+10* sprinting);
 		if (onwater&&onground){
 			movespeed/=4;
 		}
-		bool crouching=(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL));
+		float jumpboost=((yaccel!=0.f)*2.)+1.;
+		float mx=(IsKeyDown(KEY_W) - IsKeyDown(KEY_S))*movespeed*jumpboost;
+		float my=(IsKeyDown(KEY_D) - IsKeyDown(KEY_A))*movespeed*jumpboost;
+		bool moving=mx!=0.f||my!=0.f;
+		float soundidx=(
+			jumping&&!moving?1.f:
+				jumping&&moving?
+					sprinting?0.8f:
+						crouching?0.6f:0.4f
+				:0.0f
+		);
+		
 		float camx=
 				IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
 		float camy=
 				IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed;
 				
-		
+				
 		yaccel=onground?0.f:
 			yaccel<=-1.?-1.:
 			yaccel-0.005f;
-		yaccel=(IsKeyDown(KEY_SPACE)
+		if (player.y<1.f && !onwater && onground && yaccel==0.f){
+			yaccel=1.0-player.y;
+		}
+		yaccel=(jumping
 		&&onground&&!onwater
-	)?.08:yaccel;		
-		float jumpboost=(yaccel!=0.f)+1.;
-		float mx=(IsKeyDown(KEY_W) - IsKeyDown(KEY_S))*movespeed*jumpboost;
-		float my=(IsKeyDown(KEY_D) - IsKeyDown(KEY_A))*movespeed*jumpboost;
+	)?.1:yaccel;		
 		
 		if (headbob<-0.05f){
 			headdown=false;
@@ -48,13 +75,15 @@
 			headdown=true;
 		}
 		float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
+		sped=totalspeed;
 		float bob=headdown?-totalspeed/4:totalspeed/4;
-		headbob+=bob;
+		headbob+=onground?bob:0.f;
 		float tcos=cos(player.yaw);
 		float tsin=sin(player.yaw);
-		
-		float targetx=player.x+((mx+0.3)*tcos-(my+0.3)*tsin);
-		float targetz=player.z+((mx+0.3)*tsin+(my+0.3)*tcos);
+		float amx=mx>0?1.:mx<0?-1.:0;
+		float amy=my>0?1.:my<0?-1.:0;
+		float targetx=player.x+((mx+amx)*tcos-(my+amy)*tsin);
+		float targetz=player.z+((mx+amx)*tsin+(my+amy)*tcos);
 		short ttx=((short)(targetx/4)+512);
 		short ttz=1024-((short)(targetz/4.)+512);
 		if (targetz>0)ttz--; // wont work cuz ur not taking rotation into consideration
@@ -135,48 +164,53 @@
 		if (texturesupdt>60){
 			texturesupdt=0;
 			y+=0.1;
-			//updatetextures();
-			hourcycle+=0.1;
+			updatetextures();
+			hourcycle+=0.001;
 			if (hourcycle>=1.){
 				hourcycle=0;
 				daytime=daytime==5?daytime=0:daytime+1;
 			}
 		}
+		
 	}
+	
+	
+	
+	
 	//#define TESTGEN
 	#include"biome.h"
 	inline unsigned char gentile(int x, int z,unsigned char mask,unsigned char population){
 		
-	#ifdef TESTGEN
-		float fx=x; float fz=z;
-		float heat=(heatnoise.GetNoise(fx,fz));
-		float humidity=(humiditynoise.GetNoise(fx,fz));
-		float pop=(populationnoise.GetNoise(fx,fz));
-		if (humidity>0.49f){
-			if (humidity>0.61f){
-				if (heat<-0.49f){
-					return 7;
+		#ifdef TESTGEN
+			float fx=x; float fz=z;
+			float heat=(heatnoise.GetNoise(fx,fz));
+			float humidity=(humiditynoise.GetNoise(fx,fz));
+			float pop=(populationnoise.GetNoise(fx,fz));
+			if (humidity>0.49f){
+				if (humidity>0.61f){
+					if (heat<-0.49f){
+						return 7;
+					}
+					return 255;
 				}
-				return 255;
+				return 2;
 			}
-			return 2;
-		}
-		if (heat<-0.49f){
-			return 8;
-		}
-		if (heat>0.49f){
-			if (heat>0.58f){
-				if (heat>0.76f){
-					return 254;
+			if (heat<-0.49f){
+				return 8;
+			}
+			if (heat>0.49f){
+				if (heat>0.58f){
+					if (heat>0.76f){
+						return 254;
+					}
+					return 5;
 				}
-				return 5;
+				return 4;
 			}
-			return 4;
-		}
-		return 1;
-	#else
-		return  genbiome[mask](x,z,population);
-	#endif
+			return 1;
+		#else
+			return  genbiome[mask](x,z,population);
+		#endif
 	}
 	void map::updatechunks() {
 		long start = __rdtsc();

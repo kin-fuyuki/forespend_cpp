@@ -11,8 +11,7 @@ std::string PATH=		"../"					;
 scene* current=&world;
 int main(int argc, char* argv[]) {
 	init();
-	while (!WindowShouldClose()) {	
-	current->update();
+	while (!WindowShouldClose()) {
 	render();
 	}
 	close();
