@@ -2,13 +2,14 @@
 #include"game/game.h"
 
 map			world;
-mainmenu 	menu;
+mainmenu 	menum;
 config		cfg;
 std::string NAME=		"forespend"				;
 std::string VERSION=	"0.02g"					;
 std::string PATH=		"../"					;
 
-scene* current=&world;
+//scene* current=&world;
+scene* current=&menum;
 int main(int argc, char* argv[]) {
 	init();
 	while (!WindowShouldClose()) {

@@ -15,10 +15,9 @@ uniform float radioactivity;
 uniform float xp;
 */
 extern	int	timeloc,healthloc,staminaloc,manaloc,energyloc,fatigueloc,radioloc,xploc;
-extern	unsigned char scale;
 extern	int texturesupdt;
 extern	int flip;
-extern	bool f1;
+extern	bool f1,f3;
 extern	bool drawnworld;
 extern	bool headdown;
 extern	float headbob;
@@ -36,6 +35,16 @@ extern	float daycol[4];
 extern	char daytime;
 extern	float hourcycle;
 
+/*
+/usr/bin/ld: build/objs/linux/game/world/_render.cpp.o:(.bss+0x18): multiple definition of `menu'; build/objs/linux/main.cpp.o:(.bss+0xd0): first defined here
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+make: *** [Makefile:56: out/linux/bin/l5.64] Error 1
+/usr/bin/x86_64-w64-mingw32-ld: build/objs/windows/game/world/_render.cpp.o:/home/komi/src/cpp/forespend_cpp/src/game/world/_render.cpp:13: multiple definition of `menu'; build/objs/windows/main.cpp.o:/home/komi/src/cpp/forespend_cpp/src/main.cpp:5: first defined here
+clang++: error: linker command failed with exit code 1 (use -v to see invocation)
+*/
+extern	short			page;
+extern	std::vector<menupage> menu;
+
 extern	FastNoiseLite	heatnoise;
 extern	FastNoiseLite	humiditynoise;
 extern	FastNoiseLite	populationnoise;
@@ -46,10 +55,11 @@ extern	float 			worldSizeV[2];
 
 extern	Font			debugfont;
 
-extern	Texture2D		tilesheet;
-extern	Texture2D 		tilemapp;
-extern	Image 			sheet;
-extern	Image 			skybox;
+
+extern	Texture2D		tilesheet;//
+extern	Texture2D 		tilemapp;//
+extern	Image 			sheet;//
+extern	Image 			skybox;//
 extern	Image			tilemaptx;
 extern	Texture 		playercursor;
 extern	Texture 		skytexture;

@@ -1,6 +1,7 @@
 #include"world.h"
 
-bool f1=false;
+bool f1=true;
+bool f3=false;
 #ifndef WORLDUPDATE
 	float sped=0.f;
 	bool statsflipflop=true;
@@ -14,6 +15,43 @@ bool f1=false;
 		if (IsKeyReleased(KEY_F1)){
 			fatal("f1 %i",f1?1:0);
 			f1=!f1;
+		}if (IsKeyReleased(KEY_F3)){
+			fatal("f3 %i",f3?1:0);
+			f3=!f3;
+		}if (IsKeyPressed(KEY_ESCAPE)){
+			page=page==-1?0:-1;
+		}
+		int pagebefore=page;
+		if (page!=-1){
+			float scalex=(float)renderw/(float)GetScreenWidth();
+			float scaley=(float)renderh/(float)GetScreenHeight();
+			int mx=GetMouseX()*scalex;
+			int my=GetMouseY()*scaley;
+			for (int i = 0; i < menu[page].items.size(); i++) {
+				if (pagebefore!=page)break;
+				auto* item=menu[page].items[i];
+				int x=item->x*scale;
+				int y=item->y*scale;
+				int w=item->w*scale;
+				int h=item->h*scale;
+				if (auto* buttonitem = dynamic_cast<menubutton*>(item)){
+					if (mx>x&&mx<x+w&&my>y&&my<y+h){
+						if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
+							buttonitem->process();
+						}if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+							buttonitem->hover=false;
+							buttonitem->down=true;
+						}else {
+							buttonitem->down=false;
+							buttonitem->hover=true;
+						}
+					}else{
+						buttonitem->down=false;
+						buttonitem->hover=false;
+					}
+					
+				}
+			}
 		}
 		if (stats.xp>=1.f){
 			statsflipflop=false;

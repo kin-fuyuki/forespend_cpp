@@ -10,6 +10,10 @@
 #include <rlgl.h>
 #include<vector>
 #include<map>
+extern	int scale;
+extern bool changescene;
+extern short nextscene;
+extern 	Font			menufont;
 class scene{
 public:
 
@@ -72,4 +76,30 @@ public:
 	void update() 	override;
 	void render()	override;
 	void close()	override;
+};
+
+struct menuitem{
+	int x;
+	int y;
+	int w;
+	int h;
+	char ID;
+	virtual ~menuitem()=default;
+	menuitem(int x,int y,int w,int h,char ID):x(x),y(y),w(w),h(h),ID(ID){};
+};
+struct menutext:public menuitem{
+	std::string text;
+	menutext(int x,int y,int w,int h,char ID,std::string text):menuitem(x,y,w,h,ID),text(text){};
+};
+struct menubutton:public menutext{
+	bool hover,down;
+	void (*process)();
+	menubutton(int x,int y,int w,int h,char ID,std::string text,void (*process)()):menutext(x,y,w,h,ID,text),process(process){
+		hover=down=false;
+		
+	};
+};
+struct menupage{
+	std::vector<menuitem*> items;
+	char ID;
 };

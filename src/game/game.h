@@ -4,6 +4,7 @@
 #include"../config.h"
 extern bool 	running	;
 extern map 		world	;
+extern mainmenu menum	;
 extern scene* 	current	;
 extern config 	cfg		;
 extern short	updatems;

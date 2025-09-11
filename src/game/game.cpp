@@ -1,8 +1,10 @@
 #include "game.h"
 #include "../term.h"
-unsigned char scale=4;	
+int scale=4;	
 short	renderw=360*scale;
 short	renderh=240*scale;
+bool changescene=false;
+short nextscene=0;
 Shader shd;GRAPHICS_API_OPENGL_33
 RenderTexture2D rndr;
 void init() {
@@ -12,14 +14,18 @@ void init() {
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
-	current->init();
+	menum.init();
+	world.init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	SetExitKey(KEY_NULL);
+	
 	rndr=LoadRenderTexture(renderw,renderh);
+	menufont=LoadFont("res/fonts/dos.ttf");
 }
 void close() {
-	current->close();
+	world.close();
+	menum.close();
 	
 	CloseWindow();
 	cfg.save();
@@ -42,6 +48,18 @@ Color clra={255,0,0,255};
 short col=1;
 void updateclra();
 void render() {
+	if (changescene) {
+		switch (nextscene) {
+				case 0:
+					changescene=false;
+					current=&menum;
+					break;
+				case 1:
+					changescene=false;
+					current=&world;
+					break;
+		}
+	}
 	updateclra();
 
 	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)) close();

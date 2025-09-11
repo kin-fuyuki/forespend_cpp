@@ -23,6 +23,7 @@ Texture playercursor;
 Texture toolbar;
 Shader toolbarshader;
 Font debugfont;
+Font menufont;
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -59,6 +60,7 @@ void map::init(){
 	playercursor=LoadTexture("res/images/playercursor.png");
 	debugfont=LoadFont("res/fonts/kipsynth.ttf");
 	toolbar=LoadTexture("res/images/menubar.png");
+	
 	rlSetClipPlanes(.2, 4000.0);
 
 	tilesheet = LoadTexture("res/images/tilesheet.png");
@@ -113,6 +115,19 @@ void map::init(){
 }
 
 map::~map(){
+	UnloadModel(worldmodel);
+	UnloadTexture(tilesheet);//
+	UnloadTexture(tilemapp);//
+	UnloadImage(sheet);//
+	UnloadImage(skybox);//
+	UnloadImage(tilemaptx);
+	UnloadTexture(skytexture);
+	UnloadTexture(playercursor);
+	UnloadTexture(toolbar);
+	UnloadMaterial(basicmat);
+	UnloadShader(toolbarshader);
+	UnloadFont(debugfont);
+	UnloadFont(menufont);
 }
 
 void map::close(){
@@ -132,12 +147,39 @@ void map::close(){
 	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width:tilemaptx.width
 	,tilemaptx.height);
 }
-
-
-mainmenu::mainmenu(){}
-mainmenu::~mainmenu(){}
-void mainmenu::init(){}
-void mainmenu::update(){}
-void mainmenu::render(){}
-void mainmenu::close(){}
+std::vector<menupage> menu={
+		menupage{//main
+			{
+				new menubutton{ 0,20,360,20, 0, "return",
+					[](){ page=-1; }},
+					
+				new menubutton{ 0,60,360,20, 1, "save",
+					[](){ }},
+					
+				new menubutton{ 0,90,360,20, 2, "load",
+					[](){ }},
+					
+				new menubutton{0,140,360,20, 1, "options",
+					[](){ page=1; }},
+					
+				new menubutton{ 0,180,360,20, 2, "exit",
+					[](){ changescene=true;nextscene=0; }}
+			},0},
+		menupage{{//options
+			
+				new menubutton{ 0,40,360,20, 1, "graphics",
+					[](){ page=2; }},
+					
+				new menubutton{ 0,70,360,20, 2, "sound",
+					[](){ page=3; }},
+					
+				new menubutton{0,100,360,20, 1, "controls",
+					[](){ page=4; }},
+					
+				new menubutton{ 0,180,360,20, 2, "back",
+					[](){ page=0; }}
+			
+			},1},
+			
+	};
 
