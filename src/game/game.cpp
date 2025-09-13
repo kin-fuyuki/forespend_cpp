@@ -19,8 +19,8 @@ void init() {
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
-	winwidth=GetScreenWidth();
-	winheight=GetScreenHeight();
+	winwidth=360;
+	winheight=240;
 	
 	prevresx=winwidth;
 	prevresy=winheight;
@@ -64,17 +64,10 @@ void updateclra();
 void render() {
 	winwidth=GetScreenWidth();
 	winheight=GetScreenHeight();
-	if (prevresx!=winwidth||prevresy!=winheight){
-		if (cfg.internalres){
+	if (prevresx!=winwidth||prevresy!=winheight && !cfg.internalres){
 			UnloadRenderTexture(rndr);
 			rndr=LoadRenderTexture(renderw,renderh);}
-		else{
-			relresx=(float)winwidth/(float)renderw;
-			relresy=(float)winheight/(float)renderh;
-			prevresx=winwidth;
-			prevresy=winheight;
-		}
-	}
+	
 	if (changescene) {
 		switch (nextscene) {
 				case 0:

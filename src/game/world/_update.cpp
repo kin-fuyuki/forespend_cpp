@@ -27,6 +27,9 @@ bool f3=false;
 			float scaley=(float)renderh/(float)GetScreenHeight();
 			int mx=GetMouseX();
 			int my=GetMouseY();
+		if (cfg.internalres){
+		mx*=scalex,	my*=scaley;
+		}
 			for (int i = 0; i < menu[page]->items.size(); i++) {
 				if (pagebefore!=page)break;
 				auto* item=menu[page]->items[i];

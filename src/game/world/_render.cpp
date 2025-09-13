@@ -100,9 +100,6 @@ void map::render(){
 	(Rectangle){0,(float)toolbary*relresy,(float)renderw*relresx,(float)toolbarh*relresy}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
 	if (f3){
-		if (cfg.internalres)
-		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*scale, 3*scale, WHITE);
-		else
 		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*relresx, 3*relresy, WHITE);
 	}
 	
@@ -116,9 +113,6 @@ void map::render(){
 		if (page!=-1){
 		DrawRectangle(0, 0, renderw*relresx, renderh*relresy, (Color){0, 60, 180, 100});
 		float sx,sy;
-		if (cfg.internalres)
-		sx=scale, sy=scale;
-		else
 		sx=relresx, sy=relresy;
 		for (int i=0;i<getitem.size();i++){
 			auto* item=getitem[i];
