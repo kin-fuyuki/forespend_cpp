@@ -5,7 +5,7 @@ map			world;
 mainmenu 	menum;
 config		cfg;
 std::string NAME=		"forespend"				;
-std::string VERSION=	"0.02g"					;
+std::string VERSION=	"0.03g"					;
 std::string PATH=		"../"					;
 
 //scene* current=&world;
