@@ -31,6 +31,7 @@ void mainmenu::update(){
             nextFrameDataOffset = skybg.width*skybg.height*4*frame;
 			
             UpdateTexture(skytx, ((unsigned char *)skybg.data) + nextFrameDataOffset);
+			fatal("frame %i",frame);
 
             counter = 0;
         }
@@ -38,12 +39,16 @@ void mainmenu::update(){
 		int pagebefore=pagem;
 		float scalex=(float)renderw/(float)GetScreenWidth();
 		float scaley=(float)renderh/(float)GetScreenHeight();
-		int mx=GetMouseX()*scalex;
-		int my=GetMouseY()*scaley;
-		
-			for (int i = 0; i < memum[pagem].items.size(); i++) {
+		int mx,my;
+		mx=GetMouseX();
+		my=GetMouseY();
+		if (cfg.internalres){
+		mx*=scalex,	my*=scaley;
+		}
+			for (int i = 0; i < memum[pagem]->items.size(); i++) {
+				
 				if (pagebefore!=pagem)break;
-				auto* item=memum[pagem].items[i];
+				auto* item=memum[pagem]->items[i];
 				int x=item->x*scale;
 				int y=item->y*scale;
 				int w=item->w*scale;
@@ -80,19 +85,19 @@ void mainmenu::render(){
 }
 void mainmenu::close(){}
 
-std::vector<menupage> memum={
-	menupage{{
+std::vector<menupage*> memum={
+	new menupage{{
 				// (360-110)/2=150
 				new menubutton{ 120,100,110,40, 0, "play",
 					[](){ changescene=true;nextscene=1; }},
 				new menubutton{ 20,180,190,40, 1, "options",
-					[](){ pagem=1; }},
+					[](){ *p=1; }},
 				new menubutton{ 230,180,110,40, 2, "exit",
 					[](){exit(0);}}
-	},0}
+	},0},
 };
 
-#define getitem memum[pagem].items
+#define getitem memum[pagem]->items
 void rendermenum(){
 		//DrawRectangle(0, 0, renderw, renderh, (Color){0, 60, 180, 100});
 		for (int i=0;i<getitem.size();i++){

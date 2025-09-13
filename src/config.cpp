@@ -11,7 +11,8 @@ config::config() {
 	viewdistance=1;
 	fov=80;
 	resolution=1;
-	
+	internalres=true;
+	scale=4;	
 	load();
 }
 
@@ -37,6 +38,9 @@ void config::load() {
 			if (cat=="gr.distance") viewdistance=atoi(key.c_str());
 			if (cat=="gr.fov") fov=atoi(key.c_str());
 			if (cat=="gr.resolution") resolution=atoi(key.c_str());
+			if (cat=="gr.internalres") internalres=key=="true";
+			if (cat=="gr.scale") scale=atoi(key.c_str());
+			scale=scale>10||scale<1?1:scale;
 		}
 			
 		file.close();
@@ -46,11 +50,15 @@ void config::load() {
 void config::save() {
 	std::ofstream file(savefile.c_str(), std::ios::out | std::ios::trunc);
 	if (file.is_open()) {
+		file << "# health options\n# sleep warning, auto-close and not allowing to open game\n";
 		file << "health.sleep=" << (healthsleep?"true":"false") << std::endl;
+		file << "# break warning, freezes game for 30 minutes every 2 hours\n";
 		file << "health.break=" << (healthbreak?"true":"false") << std::endl;
 		file << "gr.distance=" << viewdistance << std::endl;
 		file << "gr.fov=" << fov << std::endl;
 		file << "gr.resolution=" << resolution << std::endl;
+		file << "gr.internalres=" << (internalres?"true":"false") << std::endl;
+		file << "gr.scale=" << scale << std::endl;
 		file.close();
 	}
 }

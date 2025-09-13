@@ -99,24 +99,33 @@ void map::render(){
 	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
 	(Rectangle){0,(float)toolbary,(float)renderw,(float)toolbarh}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
-	if (f3)
-	DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*scale, 3*scale, WHITE);
+	if (f3){
+		if (cfg.internalres)
+		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*scale, 3*scale, WHITE);
+		else
+		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*relresx, 3*relresy, WHITE);
+	}
 	
 	}
 	rendermenu();
 	//fatal("f1 %i",f1);	
 	}
 #include <typeinfo>
-#define getitem menu[page].items
+#define getitem menu[page]->items
 	void rendermenu(){
 		if (page!=-1){
 		DrawRectangle(0, 0, renderw, renderh, (Color){0, 60, 180, 100});
+		float sx,sy;
+		if (cfg.internalres)
+		sx=scale, sy=scale;
+		else
+		sx=relresx, sy=relresy;
 		for (int i=0;i<getitem.size();i++){
 			auto* item=getitem[i];
-			int x=item->x*scale;
-			int y=item->y*scale;
-			int w=item->w*scale;
-			int h=item->h*scale;
+			int x=item->x*sx;
+			int y=item->y*sy;
+			int w=item->w*sx;
+			int h=item->h*sy;
 			//x 0 y 400 w 5760 h 80
 			if (auto* buttonitem = dynamic_cast<menubutton*>(item)){
 				DrawRectangle(x, y, w, h,
@@ -125,16 +134,16 @@ void map::render(){
 				);
 				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
-					w/2-(((float)buttonitem->text.size())*(13*scale)/2)		,
-					(float)y+(h/2-(10*scale/2))
+					w/2-(((float)buttonitem->text.size())*(13*sx)/2)		,
+					(float)y+(h/2-(10*sy/2))
 				};
 					echo("textPos %f %f",textPos.x,textPos.y);
 					echo("x %i y %i w %i h %i",x,y,w,h);
-				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*scale, 3*scale, WHITE);
+				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*sx, 3*sy, WHITE);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
-				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*scale, 3*scale, WHITE);
+				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*sx, 3*sy, WHITE);
 			}else{
 				
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});

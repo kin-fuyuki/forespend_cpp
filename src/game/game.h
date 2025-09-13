@@ -1,12 +1,10 @@
-#pragma once
 #include"world/world.h"
+#include"world/mainmenu.h"
 #include"io.h"
-#include"../config.h"
 extern bool 	running	;
 extern map 		world	;
 extern mainmenu menum	;
 extern scene* 	current	;
-extern config 	cfg		;
 extern short	updatems;
 void init();
 void close();

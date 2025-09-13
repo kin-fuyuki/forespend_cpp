@@ -1,3 +1,4 @@
+#pragma once
 #include"../../config.h"
 #include "../../term.h"
 #include"../io.h"
@@ -11,9 +12,11 @@
 #include<vector>
 #include<map>
 extern	int scale;
+extern float relresx,relresy;
 extern bool changescene;
 extern short nextscene;
 extern 	Font			menufont;
+extern config 	cfg		;
 class scene{
 public:
 
@@ -78,7 +81,8 @@ public:
 	void close()	override;
 };
 
-struct menuitem{
+class menuitem{
+public:
 	int x;
 	int y;
 	int w;
@@ -87,11 +91,13 @@ struct menuitem{
 	virtual ~menuitem()=default;
 	menuitem(int x,int y,int w,int h,char ID):x(x),y(y),w(w),h(h),ID(ID){};
 };
-struct menutext:public menuitem{
+class menutext:public menuitem{
+public:
 	std::string text;
 	menutext(int x,int y,int w,int h,char ID,std::string text):menuitem(x,y,w,h,ID),text(text){};
 };
-struct menubutton:public menutext{
+class menubutton:public menutext{
+public:
 	bool hover,down;
 	void (*process)();
 	menubutton(int x,int y,int w,int h,char ID,std::string text,void (*process)()):menutext(x,y,w,h,ID,text),process(process){
@@ -99,7 +105,17 @@ struct menubutton:public menutext{
 		
 	};
 };
-struct menupage{
+class menupage{
+	public:
 	std::vector<menuitem*> items;
+	menupage(std::vector<menuitem*> items,int ID):items(items),ID(ID){};
 	char ID;
 };
+
+
+extern	short* p;
+extern menupage options;
+extern menupage graphics;
+extern menupage sound;
+extern menupage controls;
+//&options,&graphics,&sound,&controls

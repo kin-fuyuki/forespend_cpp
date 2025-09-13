@@ -6,4 +6,4 @@ make linux
 #make web
 
 
-sleep 5
+sleep 10

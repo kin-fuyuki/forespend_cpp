@@ -1,25 +1,39 @@
 #include "game.h"
 #include "../term.h"
+float relresx,relresy;
+float prevresx,prevresy;
+float winwidth,winheight;
 int scale=4;	
-short	renderw=360*scale;
-short	renderh=240*scale;
+short	renderw=360;
+short	renderh=240;
 bool changescene=false;
 short nextscene=0;
 Shader shd;GRAPHICS_API_OPENGL_33
 RenderTexture2D rndr;
 void init() {
+	p=&pagem;
+	pagem=0;
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
 	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
+	winwidth=GetScreenWidth();
+	winheight=GetScreenHeight();
+	
+	prevresx=winwidth;
+	prevresy=winheight;
+	relresx=(float)renderw/(float)winwidth;
+	relresy=(float)renderh/(float)winheight;
 	menum.init();
 	world.init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	SetExitKey(KEY_NULL);
 	
+	renderh*=cfg.scale;
+	renderw*=cfg.scale;
 	rndr=LoadRenderTexture(renderw,renderh);
 	menufont=LoadFont("res/fonts/dos.ttf");
 }
@@ -48,13 +62,28 @@ Color clra={255,0,0,255};
 short col=1;
 void updateclra();
 void render() {
+	winwidth=GetScreenWidth();
+	winheight=GetScreenHeight();
+	if (prevresx!=winwidth||prevresy!=winheight){
+		renderw=winwidth;
+		renderh=winheight;
+		relresx=(float)renderw/(float)winwidth;
+		relresy=(float)renderh/(float)winheight;
+		rndr=LoadRenderTexture(renderw,renderh);
+		prevresx=winwidth;
+		prevresy=winheight;
+	}
 	if (changescene) {
 		switch (nextscene) {
 				case 0:
+					pagem=0;
+					p=&page;
 					changescene=false;
 					current=&menum;
 					break;
 				case 1:
+					pagem=-1;
+					p=&page;
 					changescene=false;
 					current=&world;
 					break;
@@ -66,10 +95,13 @@ void render() {
 	current->update();
 	SetTraceLogLevel(LOG_ERROR);
 	
-
+	if (cfg.internalres)
 	BeginTextureMode(rndr);
+	else
+	BeginDrawing();
 	ClearBackground(clra);
 	current->render();
+	if (cfg.internalres){
 	EndTextureMode();
 	
 	BeginDrawing();
@@ -79,7 +111,7 @@ void render() {
 	,
 	{0,0},0,WHITE
 	);
-	EndShaderMode();
+	EndShaderMode();}
 	EndDrawing();
 	
 	clearchanged();

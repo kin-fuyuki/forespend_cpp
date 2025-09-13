@@ -43,7 +43,7 @@ make: *** [Makefile:56: out/linux/bin/l5.64] Error 1
 clang++: error: linker command failed with exit code 1 (use -v to see invocation)
 */
 extern	short			page;
-extern	std::vector<menupage> menu;
+extern	std::vector<menupage*> menu;
 
 extern	FastNoiseLite	heatnoise;
 extern	FastNoiseLite	humiditynoise;

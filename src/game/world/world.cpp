@@ -147,8 +147,8 @@ void map::close(){
 	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width:tilemaptx.width
 	,tilemaptx.height);
 }
-std::vector<menupage> menu={
-		menupage{//main
+std::vector<menupage*> menu={
+		new menupage{//main
 			{
 				new menubutton{ 0,20,360,20, 0, "return",
 					[](){ page=-1; }},
@@ -165,21 +165,6 @@ std::vector<menupage> menu={
 				new menubutton{ 0,180,360,20, 2, "exit",
 					[](){ changescene=true;nextscene=0; }}
 			},0},
-		menupage{{//options
-			
-				new menubutton{ 0,40,360,20, 1, "graphics",
-					[](){ page=2; }},
-					
-				new menubutton{ 0,70,360,20, 2, "sound",
-					[](){ page=3; }},
-					
-				new menubutton{0,100,360,20, 1, "controls",
-					[](){ page=4; }},
-					
-				new menubutton{ 0,180,360,20, 2, "back",
-					[](){ page=0; }}
-			
-			},1},
 			
 	};
 

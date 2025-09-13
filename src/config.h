@@ -19,12 +19,13 @@ struct config {
 	break: 30 minutes game blocking every 2 hours
 	sleep: block game during 11pm and 7am
 	*/
-bool firstlaunch;
-	bool healthsleep, healthbreak;
+	bool healthsleep, healthbreak, internalres,scale;
 	short viewdistance, fov,resolution;
 	config();
 	void load();
 	void save();
+private:
+bool firstlaunch;
 	
 };
 
