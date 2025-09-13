@@ -118,4 +118,4 @@ extern menupage options;
 extern menupage graphics;
 extern menupage sound;
 extern menupage controls;
-//&options,&graphics,&sound,&controls
+//

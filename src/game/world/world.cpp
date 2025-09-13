@@ -165,6 +165,6 @@ std::vector<menupage*> menu={
 				new menubutton{ 0,180,360,20, 2, "exit",
 					[](){ changescene=true;nextscene=0; }}
 			},0},
-			
+			&options,&graphics,&sound,&controls
 	};
 

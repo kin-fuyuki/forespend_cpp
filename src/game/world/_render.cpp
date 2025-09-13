@@ -46,8 +46,8 @@ void map::render(){
     Rectangle dstrec = {
         0, 
         0, 
-        (float)renderw, 
-        (float)renderh
+        (float)renderw*relresx, 
+        (float)renderh*relresy
     };
 	
 	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
@@ -97,7 +97,7 @@ void map::render(){
 	BeginShaderMode(toolbarshader);
 	if (f1){
 	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
-	(Rectangle){0,(float)toolbary,(float)renderw,(float)toolbarh}, Vector2{0,0}, 0, WHITE);
+	(Rectangle){0,(float)toolbary*relresy,(float)renderw*relresx,(float)toolbarh*relresy}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
 	if (f3){
 		if (cfg.internalres)
@@ -114,7 +114,7 @@ void map::render(){
 #define getitem menu[page]->items
 	void rendermenu(){
 		if (page!=-1){
-		DrawRectangle(0, 0, renderw, renderh, (Color){0, 60, 180, 100});
+		DrawRectangle(0, 0, renderw*relresx, renderh*relresy, (Color){0, 60, 180, 100});
 		float sx,sy;
 		if (cfg.internalres)
 		sx=scale, sy=scale;

@@ -24,16 +24,16 @@ void init() {
 	
 	prevresx=winwidth;
 	prevresy=winheight;
-	relresx=(float)renderw/(float)winwidth;
-	relresy=(float)renderh/(float)winheight;
+	relresx=(float)winwidth/(float)renderw;
+	relresy=(float)winheight/(float)renderh;
+	
 	menum.init();
 	world.init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	SetExitKey(KEY_NULL);
-	
-	renderh*=cfg.scale;
 	renderw*=cfg.scale;
+	renderh*=cfg.scale;
 	rndr=LoadRenderTexture(renderw,renderh);
 	menufont=LoadFont("res/fonts/dos.ttf");
 }
@@ -65,24 +65,28 @@ void render() {
 	winwidth=GetScreenWidth();
 	winheight=GetScreenHeight();
 	if (prevresx!=winwidth||prevresy!=winheight){
-		renderw=winwidth;
-		renderh=winheight;
-		relresx=(float)renderw/(float)winwidth;
-		relresy=(float)renderh/(float)winheight;
-		rndr=LoadRenderTexture(renderw,renderh);
-		prevresx=winwidth;
-		prevresy=winheight;
+		if (cfg.internalres){
+			UnloadRenderTexture(rndr);
+			rndr=LoadRenderTexture(renderw,renderh);}
+		else{
+			relresx=(float)winwidth/(float)renderw;
+			relresy=(float)winheight/(float)renderh;
+			prevresx=winwidth;
+			prevresy=winheight;
+		}
 	}
 	if (changescene) {
 		switch (nextscene) {
 				case 0:
 					pagem=0;
-					p=&page;
+					page=-1;
+					p=&pagem;
 					changescene=false;
 					current=&menum;
 					break;
 				case 1:
-					pagem=-1;
+					pagem=0;
+					page=-1;
 					p=&page;
 					changescene=false;
 					current=&world;

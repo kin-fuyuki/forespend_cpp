@@ -49,10 +49,10 @@ void mainmenu::update(){
 				
 				if (pagebefore!=pagem)break;
 				auto* item=memum[pagem]->items[i];
-				int x=item->x*scale;
-				int y=item->y*scale;
-				int w=item->w*scale;
-				int h=item->h*scale;
+				int x=item->x*relresx;
+				int y=item->y*relresy;
+				int w=item->w*relresx;
+				int h=item->h*relresy;
 				if (auto* buttonitem = dynamic_cast<menubutton*>(item)){
 					if (mx>x&&mx<x+w&&my>y&&my<y+h){
 						if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
@@ -76,7 +76,7 @@ void mainmenu::update(){
 void mainmenu::render(){
 	
             DrawTexturePro(skytx,
-				{0,0,(float)skybg.width,(float)skybg.height},{0,0,(float)renderw,(float)renderh}
+				{0,0,(float)skybg.width,(float)skybg.height},{0,0,(float)renderw*relresx,(float)renderh*relresy}
 			,
 				{0,0},0,WHITE
 			);
@@ -84,7 +84,7 @@ void mainmenu::render(){
 	rendermenum();
 }
 void mainmenu::close(){}
-
+#include "../game.h"
 std::vector<menupage*> memum={
 	new menupage{{
 				// (360-110)/2=150
@@ -93,8 +93,9 @@ std::vector<menupage*> memum={
 				new menubutton{ 20,180,190,40, 1, "options",
 					[](){ *p=1; }},
 				new menubutton{ 230,180,110,40, 2, "exit",
-					[](){exit(0);}}
+					[](){close();}}
 	},0},
+	&options,&graphics,&sound,&controls
 };
 
 #define getitem memum[pagem]->items
@@ -102,10 +103,10 @@ void rendermenum(){
 		//DrawRectangle(0, 0, renderw, renderh, (Color){0, 60, 180, 100});
 		for (int i=0;i<getitem.size();i++){
 			auto* item=getitem[i];
-			int x=item->x*scale;
-			int y=item->y*scale;
-			int w=item->w*scale;
-			int h=item->h*scale;
+			int x=item->x*relresx;
+			int y=item->y*relresy;
+			int w=item->w*relresx;
+			int h=item->h*relresy;
 			//x 0 y 400 w 5760 h 80
 			if (auto* buttonitem = dynamic_cast<menubutton*>(item)){
 				DrawRectangle(x, y, w, h,
@@ -114,19 +115,19 @@ void rendermenum(){
 				);
 				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
-					w/2-(((float)buttonitem->text.size())*(13*scale*2)/2)+x		,
-					(float)y+(h/2-(10*scale/2))
+					w/2-(((float)buttonitem->text.size())*(13*relresx*2)/2)+x		,
+					(float)y+(h/2-(10*relresy/2))
 				};
 					echo("textPos %f %f",textPos.x,textPos.y);
 					echo("x %i y %i w %i h %i",x,y,w,h);
-				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*scale*2, 3*scale*2, 
+				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*relresx*2, 3*relresy*2, 
 					buttonitem->down?Color{255, 255, 255, 255}:
 					buttonitem->hover?Color{255, 150, 100, 255}:Color{255, 150, 0, 255}
 				);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
-				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*scale, 3*scale, WHITE);
+				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*relresx, 3*relresy, WHITE);
 			}else{
 				
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});

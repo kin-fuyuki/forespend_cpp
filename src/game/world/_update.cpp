@@ -25,15 +25,15 @@ bool f3=false;
 		if (page!=-1){
 			float scalex=(float)renderw/(float)GetScreenWidth();
 			float scaley=(float)renderh/(float)GetScreenHeight();
-			int mx=GetMouseX()*scalex;
-			int my=GetMouseY()*scaley;
+			int mx=GetMouseX();
+			int my=GetMouseY();
 			for (int i = 0; i < menu[page]->items.size(); i++) {
 				if (pagebefore!=page)break;
 				auto* item=menu[page]->items[i];
-				int x=item->x*scale;
-				int y=item->y*scale;
-				int w=item->w*scale;
-				int h=item->h*scale;
+				int x=item->x*relresx;
+				int y=item->y*relresy;
+				int w=item->w*relresx;
+				int h=item->h*relresy;
 				if (auto* buttonitem = dynamic_cast<menubutton*>(item)){
 					if (mx>x&&mx<x+w&&my>y&&my<y+h){
 						if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)){
