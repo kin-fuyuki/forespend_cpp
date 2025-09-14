@@ -1,0 +1,10 @@
+<activity android:name="android.app.NativeActivity"
+          android:label="Forespend"
+          android:configChanges="orientation|keyboardHidden|screenSize">
+  <meta-data android:name="android.app.lib_name" android:value="a13" />
+  <intent-filter>
+    <action android:name="android.intent.action.MAIN" />
+    <category android:name="android.intent.category.LAUNCHER" />
+  </intent-filter>
+</activity>
+

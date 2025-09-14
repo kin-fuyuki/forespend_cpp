@@ -20,22 +20,24 @@ void init() {
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
 	winwidth=360;
-	winheight=240;
+	winheight=GetScreenHeight();
 	
 	prevresx=winwidth;
 	prevresy=winheight;
 	relresx=(float)winwidth/(float)renderw;
 	relresy=(float)winheight/(float)renderh;
-	
 	menum.init();
 	world.init();
 	error("gl version: %i",rlGetVersion());
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	SetExitKey(KEY_NULL);
-	renderw*=cfg.scale;
-	renderh*=cfg.scale;
+	
+	scale=cfg.scale;
+	renderw*=scale;
+	renderh*=scale;
 	rndr=LoadRenderTexture(renderw,renderh);
-	menufont=LoadFont("res/fonts/dos.ttf");
+	menufont=LoadFont("res/fonts/dos.fnt");
+	SetTextureFilter(menufont.texture, TEXTURE_FILTER_POINT);
 }
 void close() {
 	world.close();

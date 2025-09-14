@@ -21,7 +21,10 @@ void mainmenu::init(){
 	skybg = LoadImageAnim("res/images/sky.gif",&frames);
 	skytx = LoadTextureFromImage(skybg);
 }
+int fontsize=8;
 void mainmenu::update(){
+	if (IsKeyPressed(KEY_KP_ADD)) fontsize++;
+	if (IsKeyPressed(KEY_KP_SUBTRACT)) fontsize--;
 	counter++;
         if (counter >= delay)
         {
@@ -35,7 +38,6 @@ void mainmenu::update(){
 
             counter = 0;
         }
-
 		int pagebefore=pagem;
 		float scalex=(float)renderw/(float)GetScreenWidth();
 		float scaley=(float)renderh/(float)GetScreenHeight();
@@ -101,6 +103,7 @@ std::vector<menupage*> memum={
 #define getitem memum[pagem]->items
 void rendermenum(){
 		//DrawRectangle(0, 0, renderw, renderh, (Color){0, 60, 180, 100});
+		int sizef=pagem==0?24:17;
 		for (int i=0;i<getitem.size();i++){
 			auto* item=getitem[i];
 			int x=item->x*relresx;
@@ -115,19 +118,19 @@ void rendermenum(){
 				);
 				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
-					w/2-(((float)buttonitem->text.size())*(13*relresx*2)/2)+x		,
-					(float)y+(h/2-(10*relresy/2))
+					w/2-(((float)buttonitem->text.size())*(sizef*relresx)/2)+x		,
+					(float)y+(h/2-((15+((pagem==0)*9))*relresy/2))
 				};
 					echo("textPos %f %f",textPos.x,textPos.y);
 					echo("x %i y %i w %i h %i",x,y,w,h);
-				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*relresx*2, 3*relresy*2, 
+				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, sizef*relresx, 3*relresx, 
 					buttonitem->down?Color{255, 255, 255, 255}:
 					buttonitem->hover?Color{255, 150, 100, 255}:Color{255, 150, 0, 255}
 				);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
-				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*relresx, 3*relresy, WHITE);
+				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 7*relresx*3, 3*relresy, WHITE);
 			}else{
 				
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});

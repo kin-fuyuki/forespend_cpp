@@ -47,7 +47,7 @@ void map::init(){
 	camera.position = (Vector3){0.0f, 1.3f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-	camera.fovy = 80.0f;
+	camera.fovy = (float)cfg.fov;
 	camera.projection = CAMERA_CUSTOM;
 	skycolor=(Color){255,255,255,255};
 	worldmodel=LoadModel("res/models/world.obj");

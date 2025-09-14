@@ -100,7 +100,7 @@ void map::render(){
 	(Rectangle){0,(float)toolbary*relresy,(float)renderw*relresx,(float)toolbarh*relresy}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
 	if (f3){
-		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 5*relresx, 3*relresy, WHITE);
+		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 17*relresx, 2*relresy, WHITE);
 	}
 	
 	}
@@ -128,16 +128,16 @@ void map::render(){
 				);
 				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
-					w/2-(((float)buttonitem->text.size())*(13*sx)/2)		,
-					(float)y+(h/2-(10*sy/2))
+					w/2-(((float)buttonitem->text.size())*(17*sx)/2)		,
+					(float)y+(h/2-(15*sy/2))
 				};
 					echo("textPos %f %f",textPos.x,textPos.y);
 					echo("x %i y %i w %i h %i",x,y,w,h);
-				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 10*sx, 3*sy, WHITE);
+				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 17*sx, 2*sy, WHITE);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
-				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 10*sx, 3*sy, WHITE);
+				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 17*sx, 2*sy, WHITE);
 			}else{
 				
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});

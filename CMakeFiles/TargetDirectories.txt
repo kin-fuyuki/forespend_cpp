@@ -1,0 +1,4 @@
+/home/komi/src/cpp/forespend_cpp/CMakeFiles/l5.64.dir
+/home/komi/src/cpp/forespend_cpp/CMakeFiles/w1x.64.dir
+/home/komi/src/cpp/forespend_cpp/CMakeFiles/edit_cache.dir
+/home/komi/src/cpp/forespend_cpp/CMakeFiles/rebuild_cache.dir
