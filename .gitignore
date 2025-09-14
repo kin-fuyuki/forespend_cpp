@@ -12,6 +12,16 @@ codebackup
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
+tools/
+build.sh.old
+build.tmk
+foldernames.txt
+makelists
+map.obj
+map_type_-1.obj
+map_type_0.obj
+platformnames.txt
+platforms.txt
 
 # Build outputs
 build/
