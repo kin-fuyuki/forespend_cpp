@@ -12,7 +12,6 @@ codebackup
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
 
 # Build outputs
 build/
