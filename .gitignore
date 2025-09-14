@@ -8,3 +8,23 @@ out
 lib
 .vscode 
 codebackup
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Build outputs
+build/
+*.o
+*.so
+*.a
+*.out
+
+# IDE stuff
+.idea/
+.vscode/
+
+# Generated fonts/images
+*.fnt
+*.png~

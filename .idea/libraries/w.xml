@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="w">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/out/windows/w.zip!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
