@@ -17,7 +17,7 @@ menupage options{{//options
 			},1};
 menupage graphics {{//graphics
 				new menubutton{ 0,40,360,20, 1, "fullscreen",
-					[](){ }},
+					[](){ ToggleFullscreen();}},
 					
 				new menubutton{ 0,70,360,20, 2, "windowed",
 					[](){ }},

@@ -2,11 +2,11 @@
 
 Image skybg;
 Texture2D skytx;
-unsigned int nextFrameDataOffset = 0;  // Current byte offset to next frame in image.data
+unsigned int nextFrameDataOffset = 0;
 
-int frame = 0;       // Current animation frame to load and draw
-int delay = 6;             // Frame delay to switch between animation frames
-int counter = 0;           // General frames counter
+int frame = 0;
+int delay = 6;
+int counter = 0;
 int frames = 0;
 short pagem=0;
 void rendermenum();
