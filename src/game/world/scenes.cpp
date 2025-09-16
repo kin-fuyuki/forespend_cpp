@@ -1,5 +1,8 @@
 #include"scenes.h"
 short* p;
+bool vsync=true;
+Color TRUE={0,255,0,100};
+Color FALSE={255,0,0,100};
 menupage options{{//options
 			
 				new menubutton{ 0,40,360,20, 1, "graphics",
@@ -16,12 +19,34 @@ menupage options{{//options
 			
 			},1};
 menupage graphics {{//graphics
+				new menucolor{ 0,0,360,20,0,&TRUE},
+				new menubutton{ 0,0,360,20, 1, "internal res",
+				
+					[](){ cfg.internalres=!cfg.internalres;
+					static_cast<menucolor*>(graphics.items[0])->value=cfg.internalres? &TRUE : &FALSE;
+					}},
+				new menucolor{ 0,20,360,20,0,&TRUE},
+				new menubutton{ 0,20,360,20, 1, "vsync",
+					[](){
+					vsync=!vsync;
+					SetTargetFPS(vsync?GetMonitorRefreshRate(GetCurrentMonitor()) :100000);
+					static_cast<menucolor*>(graphics.items[2])->value=vsync? &TRUE : &FALSE;
+					}},
+				new menucolor{ 0,40,360,20,0,&FALSE},
 				new menubutton{ 0,40,360,20, 1, "fullscreen",
-					[](){ ToggleFullscreen();}},
+					[](){ ToggleFullscreen();
+					static_cast<menucolor*>(graphics.items[4])->value=IsWindowFullscreen() ? &TRUE : &FALSE;
 					
-				new menubutton{ 0,70,360,20, 2, "windowed",
-					[](){ }},
-					
+					}},
+				new menutext{ 0,70,140,20, 2, "res"},
+				new menubutton{ 100,70,16,20, 3, "<",
+				[](){}
+				},
+				new menutext{ 120,70,180,20, 4, "360x240"},
+				new menubutton{ 310,70,16,20, 4, ">",
+				[](){}
+				},
+				
 				new menubutton{0,100,360,20, 1, "back",
 					[](){ *p=1; }}
 			

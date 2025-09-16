@@ -136,9 +136,18 @@ void map::render(){
 				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 17*sx, 2*sy, WHITE);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
-				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
-				DrawTextEx(menufont,textitem->text.c_str(),(Vector2){(float)x,(float)y}, 17*sx, 2*sy, WHITE);
-			}else{
+				Vector2 textPos = {
+					w/2-(((float)textitem->text.size())*(sx*relresx)/2)+x		,
+					(float)y+(h/2-((15+((page==0)*9))*relresy/2))
+				};
+					echo("textPos %f %f",textPos.x,textPos.y);
+					echo("x %i y %i w %i h %i",x,y,w,h);
+				DrawTextEx(menufont,textitem->text.c_str(),textPos, sx*relresx, 3*relresx, Color{255, 255, 255, 255});
+			}else if(auto* edititem = dynamic_cast<menucolor*>(item)){
+				DrawRectangle(x, y, w, h, *edititem->value);
+			}
+			
+			else{
 				
 				DrawRectangle(x, y, w, h, Color{50, 50, 0, 100});
 			}

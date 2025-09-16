@@ -3,7 +3,7 @@
 float relresx,relresy;
 float prevresx,prevresy;
 float winwidth,winheight;
-int scale=4;	
+int scale=1;	
 short	renderw=360;
 short	renderh=240;
 bool changescene=false;
@@ -15,11 +15,12 @@ void init() {
 	pagem=0;
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
-	SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
 	InitWindow(STARTINGRESX,STARTINGRESY,NAME.c_str());
-	winwidth=360;
+	SetTargetFPS(GetMonitorRefreshRate(GetCurrentMonitor()));
+	winwidth=GetScreenWidth();
 	winheight=GetScreenHeight();
 	
 	prevresx=winwidth;

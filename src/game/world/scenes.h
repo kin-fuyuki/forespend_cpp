@@ -17,6 +17,7 @@ extern bool changescene;
 extern short nextscene;
 extern 	Font			menufont;
 extern config 	cfg		;
+extern Color TRUE,FALSE;
 class scene{
 public:
 
@@ -104,6 +105,27 @@ public:
 		hover=down=false;
 		
 	};
+};
+class menuslider:public menuitem{
+	public:
+	float value;
+	menuslider(int x,int y,int w,int h,char ID,float value):menuitem(x,y,w,h,ID),value(value){};
+};
+class menuedit:public menutext{
+	public:
+	int cursor;
+	unsigned short maxlines;
+	menuedit(int x,int y,int w,int h,char ID,std::string text):menutext(x,y,w,h,ID,text),cursor(text.size()),maxlines(-1){};
+};
+class menuradio:public menuitem{
+	public:
+	bool value;
+	menuradio(int x,int y,int w,int h,char ID,bool value):menuitem(x,y,w,h,ID),value(value){};
+};
+class menucolor:public menuitem{
+	public:
+	Color *value;
+	menucolor(int x,int y,int w,int h,char ID,Color* value):menuitem(x,y,w,h,ID),value(value){};
 };
 class menupage{
 	public:
