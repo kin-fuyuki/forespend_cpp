@@ -1,16 +1,13 @@
 #pragma once
-#include"../../config.h"
-#include "../../term.h"
-#include"../io.h"
+#include"entity.h"
 #ifdef mobile
 #define GRAPHICS_API_OPENGL_ES3
 #else
 #define GRAPHICS_API_OPENGL_21
 #endif
-#include<raylib.h>
-#include <rlgl.h>
-#include<vector>
-#include<map>
+struct res{short w,h;std::string n;};
+extern res resolutions[];
+
 extern	int scale;
 extern float relresx,relresy;
 extern bool changescene;
@@ -25,25 +22,6 @@ public:
     virtual void render() {}
     virtual void update() {}
     virtual void close() {}
-};
-struct entity{
-	int 	qx,qz;
-	float 	x,y,z;
-	float 	yaw,pitch,roll;
-	int 	id;
-};
-class data{
-	
-};
-class playerstats:public data{
-public:
-	float health;
-	float stamina;
-	float mana;
-	float energy;
-	float fatigue;
-	float radioactivity;
-	float xp;
 };
 class map:public scene{
 	Color skycolor;

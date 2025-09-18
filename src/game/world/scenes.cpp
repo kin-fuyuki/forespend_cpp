@@ -1,6 +1,14 @@
 #include"scenes.h"
 short* p;
 bool vsync=true;
+res resolutions[]={
+	{360,240,"360x240"},
+	{720,480,"720x480"},
+	{1280,720,"1280x720"},
+	{1920,1080,"1920x1080"}
+	
+};
+
 Color TRUE={0,255,0,100};
 Color FALSE={255,0,0,100};
 menupage options{{//options
