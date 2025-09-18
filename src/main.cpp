@@ -8,7 +8,7 @@ std::string NAME=		"forespend"				;
 std::string VERSION=	"0.03g"					;
 std::string PATH=		"../"					;
 
-//scene* current=&world;
+//scene* current=&scene;
 scene* current=&menum;
 int main(int argc, char* argv[]) {
 	init();

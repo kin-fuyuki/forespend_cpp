@@ -50,7 +50,7 @@ void map::init(){
 	camera.fovy = (float)cfg.fov;
 	camera.projection = CAMERA_CUSTOM;
 	skycolor=(Color){255,255,255,255};
-	worldmodel=LoadModel("res/models/world.obj");
+	worldmodel=LoadModel("res/models/scene.obj");
 	skybox=LoadImage("res/images/sky.png");
 	
 	tilemapp=LoadTextureFromImage(tilemaptx);

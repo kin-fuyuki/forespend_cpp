@@ -1,5 +1,5 @@
-#include"world/world.h"
-#include"world/mainmenu.h"
+#include"scenes/world/world.h"
+#include"scenes/mainmenu.h"
 #include"io.h"
 extern bool 	running	;
 extern map 		world	;

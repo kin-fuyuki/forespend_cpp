@@ -8,7 +8,7 @@ short	renderw=360;
 short	renderh=240;
 bool changescene=false;
 short nextscene=0;
-Shader shd;GRAPHICS_API_OPENGL_33
+Shader shd;
 RenderTexture2D rndr;
 void init() {
 	p=&pagem;
@@ -113,9 +113,9 @@ void render() {
 	);
 	EndShaderMode();}
 	EndDrawing();
-	
-	clearchanged();
-	
+
+	//clearchanged();
+
 }
 
 void updateclra() {

@@ -1,6 +1,6 @@
-#include "scenes.h"
+#include "../scenes.h"
 #include <raymath.h>
-#include "../../libs/simplex.h"
+#include "../../../libs/simplex.h"
 
 void updatetextures();
 
@@ -36,10 +36,10 @@ extern	char daytime;
 extern	float hourcycle;
 
 /*
-/usr/bin/ld: build/objs/linux/game/world/_render.cpp.o:(.bss+0x18): multiple definition of `menu'; build/objs/linux/main.cpp.o:(.bss+0xd0): first defined here
+/usr/bin/ld: build/objs/linux/game/scene/_render.cpp.o:(.bss+0x18): multiple definition of `menu'; build/objs/linux/main.cpp.o:(.bss+0xd0): first defined here
 clang++: error: linker command failed with exit code 1 (use -v to see invocation)
 make: *** [Makefile:56: out/linux/bin/l5.64] Error 1
-/usr/bin/x86_64-w64-mingw32-ld: build/objs/windows/game/world/_render.cpp.o:/home/komi/src/cpp/forespend_cpp/src/game/world/_render.cpp:13: multiple definition of `menu'; build/objs/windows/main.cpp.o:/home/komi/src/cpp/forespend_cpp/src/main.cpp:5: first defined here
+/usr/bin/x86_64-w64-mingw32-ld: build/objs/windows/game/scene/_render.cpp.o:/home/komi/src/cpp/forespend_cpp/src/game/scene/_render.cpp:13: multiple definition of `menu'; build/objs/windows/main.cpp.o:/home/komi/src/cpp/forespend_cpp/src/main.cpp:5: first defined here
 clang++: error: linker command failed with exit code 1 (use -v to see invocation)
 */
 extern	short			page;

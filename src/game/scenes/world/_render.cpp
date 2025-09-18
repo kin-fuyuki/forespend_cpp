@@ -1,4 +1,5 @@
 #include "world.h"
+#include <raylib.h>
 	int texturesupdt=120;
 	float y=-0.1;
 	bool drawnworld=true;
@@ -11,7 +12,6 @@
 	unsigned char currenttile=0;
 	short page=0;
 	
-
 	
 	int flip=0;
 	float playerrotx=0;
@@ -70,6 +70,9 @@ void map::render(){
 	DrawMesh(worldmodel.meshes[2],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
+	
+	DrawBillboard(camera,player.fs[player.frame],Vector3{(float)player.x,player.y,player.z},1.,WHITE);
+	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);
 	//DrawTexture(skytexture,0,0,WHITE);
