@@ -4,6 +4,7 @@
 #include"../io.h"
 #include<raylib.h>
 #include <rlgl.h>
+#include <string>
 #include<vector>
 #include<map>
 class data{
@@ -19,7 +20,9 @@ struct entity{
 	char sides;
 	char framepside;
 	Texture2D fs[];
-	
+	entity();
+	//entity(float x,float y,float z);
+	//entity(float x,float y,float z, std::string sprite);
 	/*
 	
 	x+ = 0 x- = 1 --|-- z+ = 2 z- = 3
