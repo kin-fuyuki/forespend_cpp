@@ -11,16 +11,21 @@ class data{
 	std::string path;
 };
 struct entity{
+std::string	name;
+std::string	desc;
+	
 	int 	qx,qz;
 	float 	x,y,z;
 	float 	yaw,pitch,roll;
 	int 	id;
-	char frames;
-	char frame;
-	char sides;
-	char framepside;
-	Texture2D fs[];
+	char	frames;
+	char	frame;
+	char	sides;
+	char	framepside;
+	bool	singlesprite;
+std::vector<Texture2D*>	fs;
 	entity();
+
 	//entity(float x,float y,float z);
 	//entity(float x,float y,float z, std::string sprite);
 	/*
