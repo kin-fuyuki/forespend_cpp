@@ -25,7 +25,7 @@ std::string	desc;
 	bool	singlesprite;
 std::vector<Texture2D*>	fs;
 	entity();
-
+	void init();
 	//entity(float x,float y,float z);
 	//entity(float x,float y,float z, std::string sprite);
 	/*

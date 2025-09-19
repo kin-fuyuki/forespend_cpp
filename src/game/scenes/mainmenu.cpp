@@ -90,14 +90,20 @@ void mainmenu::close(){}
 std::vector<menupage*> memum={
 	new menupage{{
 				// (360-110)/2=150
-				new menubutton{ 120,100,110,40, 0, "play",
+				new menubutton{ 120,100,110,40, 0, "classic",
 					[](){ changescene=true;nextscene=1; }},
+					
 				new menubutton{ 20,180,190,40, 1, "options",
 					[](){ *p=1; }},
+					
 				new menubutton{ 230,180,110,40, 2, "exit",
 					[](){close();}}
 	},0},
-	&options,&graphics,&sound,&controls
+	&options,&graphics,&sound,&controls,
+	
+	new menupage{{
+		
+	},0}
 };
 
 #define getitem memum[pagem]->items

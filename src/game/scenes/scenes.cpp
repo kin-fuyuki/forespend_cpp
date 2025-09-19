@@ -67,7 +67,7 @@ menupage sound {{//sound
 					[](){ }},
 					
 				new menubutton{0,100,360,20, 1, "back",
-					[](){ *p=2; }}
+					[](){ *p=1; }}
 			
 			},3};
 

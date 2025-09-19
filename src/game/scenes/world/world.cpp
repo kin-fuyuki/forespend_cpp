@@ -43,6 +43,7 @@ map::map(){
 	stats.health=stats.stamina=stats.mana=stats.energy=stats.fatigue=stats.radioactivity=stats.xp=1.0f;
 }
 void map::init(){
+	//player.init();
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
 	camera.position = (Vector3){0.0f, 1.3f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};

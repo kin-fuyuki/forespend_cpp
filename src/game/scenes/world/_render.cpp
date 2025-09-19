@@ -71,7 +71,7 @@ void map::render(){
 	
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	
-	DrawBillboard(camera,player.fs[player.frame],Vector3{(float)player.x,player.y,player.z},1.,WHITE);
+	//DrawBillboard(camera,player.fs[player.frame],Vector3{(float)player.x,player.y,player.z},1.,WHITE);
 	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);

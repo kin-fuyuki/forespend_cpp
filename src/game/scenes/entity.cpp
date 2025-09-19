@@ -4,13 +4,22 @@
 #include <iostream>
 #include <filesystem>
 #include <raylib.h>
-std::string defaultplayer = "res/defaultplayer/";
 
 Texture2D singletex={0,-1,0,0,0};
-entity::entity(){
+entity::entity(){if(false)
+{std::string defaultplayer = "res/defaultplayer/";
 	FILE *p_file = NULL;
+	std::string path = defaultplayer + "player.json";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+	std::cerr << path << "\n";
+
 	p_file = fopen(std::string(defaultplayer+"player.json").c_str(),"rb");
-	fseek(p_file,0,SEEK_END);
+	fseek(p_file,0,SEEK_END);// sigsegv
 	int size = ftell(p_file);
 	fclose(p_file);
 	std::ifstream file(std::string(defaultplayer+"player.json").c_str());
@@ -30,7 +39,12 @@ entity::entity(){
 		singlesprite=yyjson_get_bool(single);
 		yyjson_doc_free(doc);
 	}
-	singletex=LoadTexture((defaultplayer+"player.png").c_str());
-	fs.push_back(&singletex);
+	fs.push_back(&singletex);}
 	
+}
+void entity::init(){
+if(false){
+std::string defaultplayer = "res/defaultplayer/";
+	if(singletex.width==-1)
+	singletex=LoadTexture((defaultplayer+"player.png").c_str());}
 }
