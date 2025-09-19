@@ -62,7 +62,6 @@ void map::init(){
 	cameras[1]=&third;
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
-	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
 	toolbarshader=LoadShader("res/shaders/toolbar.vs","res/shaders/toolbar.fs");
 	playercursor=LoadTexture("res/images/playercursor.png");
 	debugfont=LoadFont("res/fonts/kipsynth.ttf");
@@ -73,6 +72,7 @@ void map::init(){
 	tilesheet = LoadTexture("res/images/tilesheet.png");
 	//SetTextureFilter(tilesheet, TEXTURE_FILTER_N);
 
+	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
 	tilemaploc  = GetShaderLocation(tilemat.shader, "tilemap");
 	sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
 	MVPloc = GetShaderLocation(tilemat.shader, "mvp");

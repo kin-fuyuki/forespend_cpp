@@ -73,8 +73,8 @@ void map::render(){
 	
 	DrawBillboardRec(camera,*player.fs[player.frame],
 		Rectangle{0,0,(float)1,2},
-		Vector3{(float)player.x,player.y,player.z},
-		Vector2{1.,1.},WHITE);
+		Vector3{(float)player.x,player.y+1,player.z},
+		Vector2{1.,2.},WHITE);
 	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);

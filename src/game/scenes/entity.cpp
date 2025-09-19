@@ -25,19 +25,27 @@ std::string defaultplayer = "res/defaultplayer/";
 	std::ifstream file(std::string(defaultplayer+"player.json").c_str());
 	frame=0;
 	if (file.is_open()) {
-		char filec[size];
+		char *filec = new char[size + 1];
+		filec[size] = '\0';
 		file.read(filec, sizeof(filec));
-		yyjson_doc *doc = yyjson_read(filec, strlen(filec), 0);
-		file.close();
-		yyjson_val *root = yyjson_doc_get_root(doc);
-		yyjson_val *namee = yyjson_obj_get(root, "name");
-		yyjson_val *descc = yyjson_obj_get(root, "description");
-		yyjson_val *single = yyjson_obj_get(root, "singlesprite");
-		
-		name=yyjson_get_str(namee);
-		desc=yyjson_get_str(descc);
-		singlesprite=yyjson_get_bool(single);
-		yyjson_doc_free(doc);
+		yyjson_doc *doc = yyjson_read(filec,size, 0);
+		if (doc) {
+			yyjson_val *root = yyjson_doc_get_root(doc);
+			yyjson_val *namee = yyjson_obj_get(root, "name");
+			yyjson_val *descc = yyjson_obj_get(root, "description");
+			yyjson_val *single = yyjson_obj_get(root, "singlesprite");
+			
+			// Check for NULL before assigning to std::string
+			const char *namestr = yyjson_get_str(namee);
+			const char *descstr = yyjson_get_str(descc);
+			
+			name = namestr ? namestr : "";
+			desc = descstr ? descstr : "";
+			singlesprite = yyjson_get_bool(single);
+			
+			yyjson_doc_free(doc);
+		}
+		delete[] filec;
 	}
 	
 }

@@ -35,7 +35,7 @@ vec4 textured(){
 	float minus=1./1024;
 	float tile = texture(tilemap, fragTexCoord).r;
     int idx = int(tile * 255.0);
-	bool terrain=idx<250;
+	bool terrain=idx<=250;
 	if (pos.y>1.0){ //top
 		if (!terrain){
 			discard;
@@ -49,15 +49,15 @@ vec4 textured(){
 		float previousz=texture(tilemap, vec2(fragTexCoord.x,fragTexCoord.y-minus)).r;
 		int previousxidx = int(previousx * 255.0);
 		int previouszidx = int(previousz * 255.0);
-		bool prevxidx=previousxidx<250;
-		bool prevzidx=previouszidx<250;
+		bool prevxidx=previousxidx<245;
+		bool prevzidx=previouszidx<245;
 		bool isterrain=1!=1;
 		bool negx=abs(n.x) > abs(n.y) && abs(n.x) > abs(n.z);
 		bool negz=abs(n.z) > abs(n.x) && abs(n.z) > abs(n.y);
-		if (prevxidx&&negx&&!terrain) { // forces outer on -x
+		if (prevxidx&&negx&&!(idx<245)) { // forces outer on -x
 			isterrain=prevxidx;
 			idx=previousxidx;
-		}else if (prevzidx&&negz&&!terrain) { // forces outer on -z
+		}else if (prevzidx&&negz&&!(idx<245)) { // forces outer on -z
 			isterrain=prevzidx;
 			idx=previouszidx;
 		}
@@ -67,18 +67,21 @@ vec4 textured(){
 			||	(negz&&!prevzidx)
 				
 				)
-			isterrain=terrain;
+			isterrain=(idx<245);
 			
 			if (!isterrain){
-			discard;
-			return vec4(0.0,0.0,0.0,0.0);}
+			discard;}
 		}
 		
-	}
-	else{
 		
-		if (idx<=245){
-			return vec4(0.0,0.0,0.0,0.0);
+	}
+	if (pos.y<=0.0){
+		
+		if (idx<=250&&idx>245){
+			
+			idx+=5;
+		}else{
+			if (idx<=250){discard;}
 		}
 	}
     int x = idx % cols;

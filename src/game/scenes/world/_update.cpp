@@ -7,8 +7,19 @@ bool f3=false;
 	float sped=0.f;
 	bool statsflipflop=true;
 	void map::update(){
-		if (IsKeyPressed(KEY_F12)){
+		if (IsKeyPressed(KEY_F11)){
 			mustupdate=true;
+			UnloadShader(tilemat.shader);
+			tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
+			tilemaploc  = GetShaderLocation(tilemat.shader, "tilemap");
+			sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
+			MVPloc = GetShaderLocation(tilemat.shader, "mvp");
+			modelloc = GetShaderLocation(tilemat.shader, "modelmat");
+			sizeloc = GetShaderLocation(tilemat.shader, "size");
+			fragcolorloc = GetShaderLocation(tilemat.shader, "fragColor");
+			camloc = GetShaderLocation(tilemat.shader, "campos");
+			colsloc = GetShaderLocation(tilemat.shader, "cols");
+			fliploc = GetShaderLocation(tilemat.shader, "flip");
 		}if (mustupdate==true){
 			updatechunks();
 			mustupdate=false;
@@ -69,11 +80,18 @@ bool f3=false;
 		if (player.z>0)ptz--;
 		if (player.x<0)ptx--;
 		currenttile=tiles[(int)ptx+size*(int)ptz];
-		bool onwater=currenttile>=250||(currenttile>=245&&player.y>=1.0);
-		bool onground=(onwater
-	? player.y<=-0.8
-	: player.y<=1.01
+		bool onwater=currenttile>250;
+		bool onbridge=currenttile>245&&!onwater;
+		bool onground=(
+	onbridge?
+			player.y<1.0f
+			?player.y<=-0.8f
+			:player.y<=1.01f
+		:onwater
+		? player.y<=-0.8
+		: player.y<=1.01
 	);
+	
 		
 		bool sprinting=(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT));
 		bool jumping=IsKeyDown(KEY_SPACE);
@@ -109,7 +127,7 @@ bool f3=false;
 		}
 		yaccel=(jumping
 		&&onground&&!onwater
-	)?.1:yaccel;		
+	)?.1:yaccel;
 		
 		if (headbob<-0.05f){
 			headdown=false;
@@ -134,7 +152,7 @@ bool f3=false;
 		if (currenttile!=targettile){
 			echo("currenttile %i targettile %i",currenttile,targettile);
 		}
-		if (currenttile>=250&&targettile<250&&player.y<1.){
+		if (currenttile>250&&targettile<250&&player.y<1.){
 			mx=0;my=0;
 			yaccel=0.01f;
 		}
@@ -214,25 +232,23 @@ bool f3=false;
 				daytime=daytime==5?daytime=0:daytime+1;
 			}
 		}
-		Vector3 target = {
-			player.x,
-			player.y + 1.6f, // aim a bit above feet, near head
-			player.z
-		};
 
-		float distance = 6.0f;   // how far behind
-		float height   = 2.0f;   // how high above
-		float offsetX  = cosf(player.yaw) * distance;
-		float offsetZ  = sinf(player.yaw) * distance;
+// Normalize
+float len = sqrtf(forward.x*forward.x + forward.y*forward.y + forward.z*forward.z);
+forward.x /= len;
+forward.y /= len;
+forward.z /= len;
 
-		third.position = {
-			target.x - offsetX,
-			target.y + height,
-			target.z - offsetZ
-		};
+// Desired distance behind player
+float distance = 6.0f;
 
-		third.target = target; // always look at player
-		third.up     = {0.0f, 1.0f, 0.0f};
+// Offset backwards along forward vector
+third.position.x = camera.position.x - forward.x * distance;
+third.position.y = camera.position.y - forward.y * distance + 1.0f; // add some height
+third.position.z = camera.position.z - forward.z * distance;
+
+// Keep looking where the original camera was looking
+third.target = camera.target;
 		if (IsKeyPressed(KEY_F5)){
 			thirdperson=!thirdperson;
 		}

@@ -11,8 +11,9 @@ short nextscene=0;
 Shader shd;
 RenderTexture2D rndr;
 void init() {
-	p=&pagem;
+	p=&page;
 	pagem=0;
+	page=-1;
 	startup(CSTR(NAME),CSTR(VERSION));
 	cfg.load();
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
