@@ -6,8 +6,8 @@
 #include <raylib.h>
 
 Texture2D singletex={0,-1,0,0,0};
-entity::entity(){if(false)
-{std::string defaultplayer = "res/defaultplayer/";
+entity::entity(){
+std::string defaultplayer = "res/defaultplayer/";
 	FILE *p_file = NULL;
 	std::string path = defaultplayer + "player.json";
 	std::cerr << path << "\n";
@@ -23,7 +23,7 @@ entity::entity(){if(false)
 	int size = ftell(p_file);
 	fclose(p_file);
 	std::ifstream file(std::string(defaultplayer+"player.json").c_str());
-	
+	frame=0;
 	if (file.is_open()) {
 		char filec[size];
 		file.read(filec, sizeof(filec));
@@ -39,12 +39,12 @@ entity::entity(){if(false)
 		singlesprite=yyjson_get_bool(single);
 		yyjson_doc_free(doc);
 	}
-	fs.push_back(&singletex);}
 	
 }
 void entity::init(){
-if(false){
 std::string defaultplayer = "res/defaultplayer/";
 	if(singletex.width==-1)
-	singletex=LoadTexture((defaultplayer+"player.png").c_str());}
+	singletex=LoadTexture((defaultplayer+"player.png").c_str());
+	fs.push_back(&singletex);
+	
 }

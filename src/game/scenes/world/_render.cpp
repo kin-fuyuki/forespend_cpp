@@ -51,7 +51,7 @@ void map::render(){
     };
 	
 	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
-	BeginMode3D(camera);
+	BeginMode3D(*cameras[thirdperson]);
 	rlEnableColorBlend();
 	SetShaderValue(tilemat.shader, colsloc, &flip, SHADER_UNIFORM_INT);
 	SetShaderValueTexture(tilemat.shader, tilemaploc, tilemapp);
@@ -71,7 +71,10 @@ void map::render(){
 	
 	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
 	
-	//DrawBillboard(camera,player.fs[player.frame],Vector3{(float)player.x,player.y,player.z},1.,WHITE);
+	DrawBillboardRec(camera,*player.fs[player.frame],
+		Rectangle{0,0,(float)1,2},
+		Vector3{(float)player.x,player.y,player.z},
+		Vector2{1.,1.},WHITE);
 	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);

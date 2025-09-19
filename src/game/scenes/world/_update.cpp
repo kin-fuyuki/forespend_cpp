@@ -1,4 +1,5 @@
 #include"world.h"
+#include <raylib.h>
 
 bool f1=true;
 bool f3=false;
@@ -152,6 +153,7 @@ bool f3=false;
 			},
 			0
 		);
+		
 		playerrotx+=camx;
 		
 		if ((playerroty>179&&camy>0)||(playerroty<101&&camy<0)){
@@ -212,9 +214,31 @@ bool f3=false;
 				daytime=daytime==5?daytime=0:daytime+1;
 			}
 		}
-		
+		Vector3 target = {
+			player.x,
+			player.y + 1.6f, // aim a bit above feet, near head
+			player.z
+		};
+
+		float distance = 6.0f;   // how far behind
+		float height   = 2.0f;   // how high above
+		float offsetX  = cosf(player.yaw) * distance;
+		float offsetZ  = sinf(player.yaw) * distance;
+
+		third.position = {
+			target.x - offsetX,
+			target.y + height,
+			target.z - offsetZ
+		};
+
+		third.target = target; // always look at player
+		third.up     = {0.0f, 1.0f, 0.0f};
+		if (IsKeyPressed(KEY_F5)){
+			thirdperson=!thirdperson;
+		}
 	}
-	
+
+bool			thirdperson=false;	
 	
 	
 	

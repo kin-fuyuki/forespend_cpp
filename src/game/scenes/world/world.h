@@ -1,4 +1,5 @@
 #include "../scenes.h"
+#include <raylib.h>
 #include <raymath.h>
 #include "../../../libs/simplex.h"
 
@@ -52,7 +53,8 @@ extern	FastNoiseLite	texturenoise;
 extern	Matrix 			model;
 extern	Model			worldmodel;
 extern	float 			worldSizeV[2];
-
+extern	Camera3D*		cameras[2];
+extern	bool			thirdperson;
 extern	Font			debugfont;
 
 

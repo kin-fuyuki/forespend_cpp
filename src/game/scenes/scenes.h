@@ -42,6 +42,7 @@ public:
 	entity				player;
 	playerstats			stats;
 	Camera3D			camera;
+	Camera3D			third;
 	
 	void init()		override;
 	void update()	override;

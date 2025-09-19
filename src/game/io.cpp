@@ -85,7 +85,7 @@ void clearchanged() {
 	changed[4] = changed[5] = changed[6] = changed[7] = 0;
 	#endif
 }
-#include"world/world.h"
+#include"scenes/world/world.h"
 #include <cstdint>
 #include <cstring>
 void savebmp(const char* filename, unsigned char* data, int width, int height) {

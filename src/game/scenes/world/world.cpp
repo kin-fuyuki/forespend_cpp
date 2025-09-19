@@ -24,6 +24,7 @@ Texture toolbar;
 Shader toolbarshader;
 Font debugfont;
 Font menufont;
+Camera3D*		cameras[2];
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
 	size=1024;
@@ -43,17 +44,22 @@ map::map(){
 	stats.health=stats.stamina=stats.mana=stats.energy=stats.fatigue=stats.radioactivity=stats.xp=1.0f;
 }
 void map::init(){
-	//player.init();
+	player.init();
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
 	camera.position = (Vector3){0.0f, 1.3f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
 	camera.fovy = (float)cfg.fov;
 	camera.projection = CAMERA_CUSTOM;
+	third.position = (Vector3){0.0f, 2.f, 0.0f};
+	third.target = (Vector3){8.0f, 0.0f, 8.0f};
+	third.up = (Vector3){0.0f, 1.0f, 0.0f};
+	third.fovy = (float)cfg.fov/1.5;
+	third.projection = CAMERA_CUSTOM;
 	skycolor=(Color){255,255,255,255};
-	worldmodel=LoadModel("res/models/scene.obj");
 	skybox=LoadImage("res/images/sky.png");
-	
+	cameras[0]=&camera;
+	cameras[1]=&third;
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
@@ -84,6 +90,7 @@ void map::init(){
 	fatigueloc = GetShaderLocation(toolbarshader, "fatigue");
 	radioloc = GetShaderLocation(toolbarshader, "radioactivity");
 	xploc = GetShaderLocation(toolbarshader, "xp");
+	worldmodel=LoadModel("res/models/world.obj");
 	echo("meshcount %i",worldmodel.meshCount);
 	echo("materialcount %i",worldmodel.materialCount);
 	basicmat=LoadMaterialDefault();
