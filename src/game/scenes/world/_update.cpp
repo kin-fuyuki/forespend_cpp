@@ -138,15 +138,14 @@ bool f3=false;
 		
 		yaccel -= 0.005 * pow(1 - yaccel / -0.9, 2);
 		if (onground){
-			if (yaccel==0.f)
 			yaccel=liquid
-				?-0.8-player.y
-				:1.0-player.y
+				?(-0.8)-player.y
+				:1.01-player.y
 			;
-			yaccel=(float)jumping/10.f;
 		}
-		mx/=(liquid*2.)+1.;
-		my/=(liquid*2.)+1.;
+		if (-0.79>=player.y){
+		mx/=(liquid*6.)+1.;
+		my/=(liquid*6.)+1.;}
 		float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
 		sped=totalspeed;
 		float bob=0.;//headdown?-totalspeed/4:totalspeed/4;
@@ -167,6 +166,17 @@ bool f3=false;
 		}
 		if (targettile<=250&&player.y>=1.01&&(player.y+yaccel<1.01)){
 			yaccel=1.01-player.y;
+		}
+		if (currenttile!=targettile){
+			echo("currenttile %i targettile %i",currenttile,targettile);
+		}
+		if (currenttile>245&&targettile<250&&player.y<1.){
+			mx=0;my=0;
+			yaccel=currenttile<=250?0.0f:0.05;
+		}
+		if (player.y<=1.02&&currenttile<=250){
+			if (player.y>=1.0)
+			yaccel=(float)jumping/10.f;
 		}
 		UpdateCameraPro(&camera,
 			(Vector3){
