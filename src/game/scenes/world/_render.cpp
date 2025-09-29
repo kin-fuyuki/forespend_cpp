@@ -36,7 +36,7 @@ void map::render(){
     skyoffy = fmod(skyoffy, skytexture.height);
     if (skyoffx < 0) skyoffx += skytexture.width;
     if (skyoffy < 0) skyoffy += skytexture.height;
-    
+	
     Rectangle srcrec = {
         skyoffx, 
         skyoffy, 
@@ -46,8 +46,12 @@ void map::render(){
     Rectangle dstrec = {
         0, 
         0, 
-        (float)renderw*relresx, 
-        (float)renderh*relresy
+        (float)(!cfg.internalres
+?			GetScreenWidth()
+:			renderw*relresx), 
+        (float)(!cfg.internalres
+?			GetScreenHeight()
+:			renderh*relresy)
     };
 	
 	DrawTexturePro(skytexture, srcrec, dstrec, Vector2{0, 0}, 0, WHITE);
@@ -102,8 +106,20 @@ void map::render(){
 +"\nspeed:"+std::to_string((int)(sped*60))+"m/s";
 	BeginShaderMode(toolbarshader);
 	if (f1){
+		
 	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
-	(Rectangle){0,(float)toolbary*relresy,(float)renderw*relresx,(float)toolbarh*relresy}, Vector2{0,0}, 0, WHITE);
+	(Rectangle){0,//(float)toolbary*relresy,
+		
+        (float)(!cfg.internalres
+?			GetScreenHeight()-(50.f*(GetScreenHeight()/renderh))
+:			toolbary*relresx), 
+        (float)(!cfg.internalres
+?			GetScreenWidth()
+:			renderw*relresx), 
+        (float)(!cfg.internalres
+?			50.f*(GetScreenHeight()/renderh)
+:			renderh*relresy)
+	}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
 	if (f3){
 		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 17*relresx, 2*relresy, WHITE);

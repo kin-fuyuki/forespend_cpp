@@ -1,3 +1,4 @@
+./build.sh
 ./link.sh
 cd out/linux/
 cp bin/l5-testing.64 bin/l5.64

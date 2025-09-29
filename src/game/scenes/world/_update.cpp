@@ -6,6 +6,24 @@ bool f3=false;
 #ifndef WORLDUPDATE
 	float sped=0.f;
 	bool statsflipflop=true;
+	float fixer=0;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	void map::update(){
 		if (IsKeyPressed(KEY_F11)){
 			mustupdate=true;
@@ -80,27 +98,14 @@ bool f3=false;
 		if (player.z>0)ptz--;
 		if (player.x<0)ptx--;
 		currenttile=tiles[(int)ptx+size*(int)ptz];
-		bool onwater=currenttile>250;
-		bool onbridge=currenttile>245&&!onwater;
-		bool onground=(
-	onbridge?
-			player.y<1.0f
-			?player.y<=-0.8f
-			:player.y<=1.01f
-		:onwater
-		? player.y<=-0.8
-		: player.y<=1.01
-	);
 	
 		
 		bool sprinting=(IsKeyDown(KEY_LEFT_SHIFT)||IsKeyDown(KEY_RIGHT_SHIFT));
 		bool jumping=IsKeyDown(KEY_SPACE);
 		bool crouching=(IsKeyDown(KEY_LEFT_CONTROL)||IsKeyDown(KEY_RIGHT_CONTROL));
-		float turnspeed=0.9f;
+		float turnspeed=1.9f;
 		float movespeed=.01f*(1.+10* sprinting);
-		if (onwater&&onground){
-			movespeed/=4;
-		}
+		
 		float jumpboost=((yaccel!=0.f)*2.)+1.;
 		float mx=(IsKeyDown(KEY_W) - IsKeyDown(KEY_S))*movespeed*jumpboost;
 		float my=(IsKeyDown(KEY_D) - IsKeyDown(KEY_A))*movespeed*jumpboost;
@@ -117,27 +122,35 @@ bool f3=false;
 				IsKeyDown(KEY_RIGHT)*turnspeed - IsKeyDown(KEY_LEFT)*turnspeed;
 		float camy=
 				IsKeyDown(KEY_DOWN)*turnspeed - IsKeyDown(KEY_UP)*turnspeed;
-				
-				
-		yaccel=onground?0.f:
-			yaccel<=-1.?-1.:
-			yaccel-0.005f;
-		if (player.y<1.f && !onwater && onground && yaccel==0.f){
-			yaccel=1.0-player.y;
-		}
-		yaccel=(jumping
-		&&onground&&!onwater
-	)?.1:yaccel;
 		
-		if (headbob<-0.05f){
-			headdown=false;
-		}else if (headbob>0.05f){
-			headdown=true;
+		
+		// physics
+		bool liquid=currenttile>250;
+		bool bridge=currenttile>245&&!liquid;
+		if (bridge){
+			liquid=player.y<1.0;	
 		}
+		bool onground=liquid
+			?player.y<=-0.8
+			:player.y<=1.0
+		;
+		
+		
+		yaccel -= 0.005 * pow(1 - yaccel / -0.9, 2);
+		if (onground){
+			if (yaccel==0.f)
+			yaccel=liquid
+				?-0.8-player.y
+				:1.0-player.y
+			;
+			yaccel=(float)jumping/10.f;
+		}
+		mx/=(liquid*2.)+1.;
+		my/=(liquid*2.)+1.;
 		float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
 		sped=totalspeed;
-		float bob=headdown?-totalspeed/4:totalspeed/4;
-		headbob+=onground?bob:0.f;
+		float bob=0.;//headdown?-totalspeed/4:totalspeed/4;
+//		headbob+=onground?bob:0.f;
 		float tcos=cos(player.yaw);
 		float tsin=sin(player.yaw);
 		float amx=mx>0?1.:mx<0?-1.:0;
@@ -152,14 +165,13 @@ bool f3=false;
 		if (currenttile!=targettile){
 			echo("currenttile %i targettile %i",currenttile,targettile);
 		}
-		if (currenttile>250&&targettile<250&&player.y<1.){
-			mx=0;my=0;
-			yaccel=0.01f;
+		if (targettile<=250&&player.y>=1.01&&(player.y+yaccel<1.01)){
+			yaccel=1.01-player.y;
 		}
 		UpdateCameraPro(&camera,
 			(Vector3){
 				mx,	my,
-				bob+
+				//bob+
 				yaccel
 	//			+	(IsKeyDown(KEY_SPACE)*movespeed - IsKeyDown(KEY_LEFT_CONTROL)*movespeed)*1
 			},
@@ -254,10 +266,55 @@ third.target = camera.target;
 		}
 	}
 
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool			thirdperson=false;	
-	
-	
-	
+
 	//#define TESTGEN
 	#include"biome.h"
 	inline unsigned char gentile(int x, int z,unsigned char mask,unsigned char population){

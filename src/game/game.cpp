@@ -3,7 +3,7 @@
 float relresx,relresy;
 float prevresx,prevresy;
 float winwidth,winheight;
-int scale=1;	
+int scale=3;	
 short	renderw=360;
 short	renderh=240;
 bool changescene=false;
@@ -24,6 +24,9 @@ void init() {
 	winwidth=GetScreenWidth();
 	winheight=GetScreenHeight();
 	
+	scale=cfg.scale;
+	renderw*=scale;
+	renderh*=scale;
 	prevresx=winwidth;
 	prevresy=winheight;
 	relresx=(float)winwidth/(float)renderw;
@@ -34,9 +37,6 @@ void init() {
 	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
 	SetExitKey(KEY_NULL);
 	
-	scale=cfg.scale;
-	renderw*=scale;
-	renderh*=scale;
 	rndr=LoadRenderTexture(renderw,renderh);
 	menufont=LoadFont("res/fonts/dos.fnt");
 	SetTextureFilter(menufont.texture, TEXTURE_FILTER_POINT);
