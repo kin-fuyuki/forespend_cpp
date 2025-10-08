@@ -68,9 +68,20 @@ void updateclra();
 void render() {
 	winwidth=GetScreenWidth();
 	winheight=GetScreenHeight();
-	if (prevresx!=winwidth||prevresy!=winheight && !cfg.internalres){
+	bool previnternal=cfg.internalres;
+	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)) close();
+	current->update();
+	SetTraceLogLevel(LOG_ERROR);
+	if (prevresx!=winwidth||prevresy!=winheight && !cfg.internalres
+	|| previnternal!= cfg.internalres
+	){
 			UnloadRenderTexture(rndr);
-			rndr=LoadRenderTexture(renderw,renderh);}
+			if (cfg.internalres)
+			rndr=LoadRenderTexture(renderw,renderh);
+			else
+			rndr=LoadRenderTexture(winwidth,winheight);
+		}
+			
 	
 	if (changescene) {
 		switch (nextscene) {
@@ -92,27 +103,20 @@ void render() {
 	}
 	updateclra();
 
-	if (IsKeyDown(KEY_LEFT_ALT)&& IsKeyDown(KEY_F4)) close();
-	current->update();
-	SetTraceLogLevel(LOG_ERROR);
 	
-	if (cfg.internalres)
 	BeginTextureMode(rndr);
-	else
-	BeginDrawing();
 	ClearBackground(clra);
 	current->render();
-	if (cfg.internalres){
 	EndTextureMode();
 	
 	BeginDrawing();
 	BeginShaderMode(shd);
 	DrawTexturePro(rndr.texture,
-		{0,0,(float)renderw,(float)-renderh},{0,0,(float)GetScreenWidth(),(float)GetScreenHeight()}
+		{0,0,(float)rndr.texture.width,(float)-rndr.texture.height},{0,0,(float)GetScreenWidth(),(float)GetScreenHeight()}
 	,
 	{0,0},0,WHITE
 	);
-	EndShaderMode();}
+	EndShaderMode();
 	EndDrawing();
 
 	//clearchanged();

@@ -106,19 +106,18 @@ void map::render(){
 +"\nspeed:"+std::to_string((int)(sped*60))+"m/s";
 	BeginShaderMode(toolbarshader);
 	if (f1){
-		
 	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
-	(Rectangle){0,//(float)toolbary*relresy,
+	(Rectangle){0,
 		
         (float)(!cfg.internalres
 ?			GetScreenHeight()-(50.f*(GetScreenHeight()/renderh))
-:			toolbary*relresx), 
+:			240-toolbar.height), 
         (float)(!cfg.internalres
 ?			GetScreenWidth()
-:			renderw*relresx), 
+:			360), 
         (float)(!cfg.internalres
 ?			50.f*(GetScreenHeight()/renderh)
-:			renderh*relresy)
+:			toolbar.height)
 	}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
 	if (f3){
@@ -133,9 +132,14 @@ void map::render(){
 #define getitem menu[page]->items
 	void rendermenu(){
 		if (page!=-1){
-		DrawRectangle(0, 0, renderw*relresx, renderh*relresy, (Color){0, 60, 180, 100});
+//		DrawRectangle(0, 0, renderw*relresx, renderh*relresy, (Color){0, 60, 180, 100});
 		float sx,sy;
+		if (!cfg.internalres)
+			{sx=(float)GetScreenWidth()/(float)360, sy=(float)GetScreenHeight()/(float)240;
+		DrawRectangle(0, 0, GetScreenWidth(),GetScreenHeight(), (Color){0, 60, 180, 100});
+}		else{
 		sx=relresx, sy=relresy;
+		DrawRectangle(0, 0, renderw*relresx,renderh*relresy, (Color){0, 60, 180, 100});}
 		for (int i=0;i<getitem.size();i++){
 			auto* item=getitem[i];
 			int x=item->x*sx;

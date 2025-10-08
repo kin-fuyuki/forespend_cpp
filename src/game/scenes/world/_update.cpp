@@ -53,12 +53,16 @@ bool f3=false;
 		}
 		int pagebefore=page;
 		if (page!=-1){
-			float scalex=(float)renderw/(float)GetScreenWidth();
-			float scaley=(float)renderh/(float)GetScreenHeight();
 			int mx=GetMouseX();
 			int my=GetMouseY();
 		if (cfg.internalres){
+			float scalex=(float)renderw/(float)GetScreenWidth();
+			float scaley=(float)renderh/(float)GetScreenHeight();
 		mx*=scalex,	my*=scaley;
+		}else{
+			float scalex=(float)GetScreenWidth()/(float)360;
+			float scaley=(float)GetScreenHeight()/(float)240;
+		mx/=scalex,	my/=scaley;
 		}
 			for (int i = 0; i < menu[page]->items.size(); i++) {
 				if (pagebefore!=page)break;
