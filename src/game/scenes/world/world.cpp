@@ -1,21 +1,26 @@
 #include "world.h"
-
+#include <vector>
+#include <string>
 #define MAX_MATERIAL_MAPS
 #define MAX_MESH_VERTEX_BUFFERS
 Model worldmodel;
 Material generator;
 Image tilemaptx;
+Material tilemat;
+Texture2D tilesheet;
 float daycol[4]={.8,.8,.8,.8};
 char daytime=2;
 float hourcycle=0.;
-Material tilemat;
-Texture2D tilesheet;
-int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,sheetloc,fliploc,fragcolorloc,camloc;
-int timeloc,healthloc,staminaloc,manaloc,energyloc,fatigueloc,radioloc,xploc;
+float worldSizeV[2];
+
+int tilemaploc,sizeloc,colsloc,modelloc,MVPloc,
+	sheetloc,fliploc,fragcolorloc,camloc,
+	timeloc,healthloc,staminaloc,manaloc,
+	energyloc,fatigueloc,radioloc,xploc;
+
 Matrix model=Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
 Material basicmat;
 Texture2D tilemapp;
-float worldSizeV[2];
 Image sheet;
 Image skybox;
 Texture skytexture;
@@ -27,6 +32,8 @@ Font menufont;
 Camera3D*		cameras[2];
 map::map(){
 	// 1024, 2048, 4096, 8192, 16384
+	//
+	
 	size=1024;
 	tiles=new unsigned char[size*size];
 	tilemaptx.data=new unsigned char[size*size]{255};
@@ -67,12 +74,13 @@ void map::init(){
 	debugfont=LoadFont("res/fonts/kipsynth.ttf");
 	toolbar=LoadTexture("res/images/menubar.png");
 	
-	rlSetClipPlanes(.2, 4000.0);
+	rlSetClipPlanes(.2, 1000.0);
 
 	tilesheet = LoadTexture("res/images/tilesheet.png");
 	//SetTextureFilter(tilesheet, TEXTURE_FILTER_N);
 
 	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
+	//
 	tilemaploc  = GetShaderLocation(tilemat.shader, "tilemap");
 	sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
 	MVPloc = GetShaderLocation(tilemat.shader, "mvp");
@@ -91,6 +99,7 @@ void map::init(){
 	radioloc = GetShaderLocation(toolbarshader, "radioactivity");
 	xploc = GetShaderLocation(toolbarshader, "xp");
 	worldmodel=LoadModel("res/models/world.obj");
+	//
 	echo("meshcount %i",worldmodel.meshCount);
 	echo("materialcount %i",worldmodel.materialCount);
 	basicmat=LoadMaterialDefault();
@@ -124,16 +133,20 @@ void map::init(){
 
 map::~map(){
 	UnloadModel(worldmodel);
-	UnloadTexture(tilesheet);//
-	UnloadTexture(tilemapp);//
-	UnloadImage(sheet);//
-	UnloadImage(skybox);//
-	UnloadImage(tilemaptx);
+	
+	UnloadTexture(tilesheet);
+	UnloadTexture(tilemapp);
 	UnloadTexture(skytexture);
 	UnloadTexture(playercursor);
 	UnloadTexture(toolbar);
+	
+	UnloadImage(sheet);
+	UnloadImage(skybox);
+	UnloadImage(tilemaptx);
+	
 	UnloadMaterial(basicmat);
 	UnloadShader(toolbarshader);
+	
 	UnloadFont(debugfont);
 	UnloadFont(menufont);
 }

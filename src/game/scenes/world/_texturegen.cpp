@@ -114,6 +114,7 @@ void updatetextures(){
 			}else{
 				idx = tidx;
 			}
+			;;
 			Color r;
 			if (idx>=G3){
 				r=grass[G3];

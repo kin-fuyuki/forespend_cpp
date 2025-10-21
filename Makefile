@@ -2,7 +2,7 @@
 CFILES := $(shell find src/ -type f -name "*.cpp")
 INCS := -I/usr/local/include/
 LIBS := -lraylib
-FLAGS := -std=c++2c -g -w -ffast-math -Ofast
+FLAGS := -std=c++23 -g -w -ffast-math -Ofast
 #FLAGS += -fsanitize=address
 WINDOWSFLAGS := --target=x86_64-w64-mingw32 -mconsole ${F}
 WLINKS := -lopengl32 -lgdi32 -lwinmm
@@ -76,7 +76,7 @@ build/objs/android/13/%.cpp.o: src/%.cpp
 	@$(API33) -fPIC $(FLAGS) -c $< $(INCS) -o $@
 out/linux/bin/l5.64: $(LOBJS)
 	@mkdir -p $(dir $@)
-	@clang++ $^ $(LIBS) -o $@ -lGL $(FLAGS)
+	@clang++ $^ $(LIBS) -o $@ -lGL $(FLAGS) -stdlib=libstdc++
 out/windows/bin/w1x.64.exe: $(WOBJS)
 	@mkdir -p $(dir $@)
 	@clang++ $^ $(LIBS) -o $@ -L /usr/local/win64/lib $(WINDOWSFLAGS) $(WLINKS) -static -static-libgcc -static-libstdc++
