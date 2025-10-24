@@ -76,7 +76,7 @@ build/objs/android/13/%.cpp.o: src/%.cpp
 	@$(API33) -fPIC $(FLAGS) -c $< $(INCS) -o $@
 out/linux/bin/l5.64: $(LOBJS)
 	@mkdir -p $(dir $@)
-	@clang++ $^ $(LIBS) -o $@ -lGL $(FLAGS) -stdlib=libstdc++
+	@clang++ $^ $(LIBS) -o $@ -lGL $(FLAGS)
 out/windows/bin/w1x.64.exe: $(WOBJS)
 	@mkdir -p $(dir $@)
 	@clang++ $^ $(LIBS) -o $@ -L /usr/local/win64/lib $(WINDOWSFLAGS) $(WLINKS) -static -static-libgcc -static-libstdc++

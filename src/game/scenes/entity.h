@@ -1,5 +1,5 @@
 #pragma once
-#include"../../config.hpp"
+#include"../../config.h"
 #include "../../term.h"
 #include"../io.h"
 #include<raylib.h>

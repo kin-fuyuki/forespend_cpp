@@ -1,6 +1,6 @@
 #pragma once
 
-#include"entity.hpp"
+#include"entity.h"
 #ifdef mobile
 #define GRAPHICS_API_OPENGL_ES3
 #else

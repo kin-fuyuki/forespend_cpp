@@ -1,4 +1,4 @@
-#include "entity.hpp"
+#include "entity.h"
 #include "../../libs/yyjson.h"
 #include<fstream>
 #include <iostream>

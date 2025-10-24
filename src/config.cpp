@@ -1,4 +1,4 @@
-#include"config.hpp"
+#include"config.h"
 #include<string.h>
 #include<fstream>
 #include <iostream>
@@ -12,7 +12,8 @@ config::config() {
 	fov=80;
 	resolution=1;
 	internalres=true;
-	scale=4;	
+	scale=4;
+	itemserver="kosumi.ddns.net:64001";
 	load();
 }
 
@@ -40,6 +41,8 @@ void config::load() {
 			if (cat=="gr.resolution") resolution=atoi(key.c_str());
 			if (cat=="gr.internalres") internalres=key=="true";
 			if (cat=="gr.scale") scale=atoi(key.c_str());
+			if (cat=="gr.crtmode") crtmode=key=="true";
+			if (cat=="svr.item") itemserver=key;
 			scale=scale>10||scale<1?1:scale;
 		}
 			
@@ -59,6 +62,7 @@ void config::save() {
 		file << "gr.resolution=" << resolution << std::endl;
 		file << "gr.internalres=" << (internalres?"true":"false") << std::endl;
 		file << "gr.scale=" << scale << std::endl;
+		file << "svr.item=" << itemserver << std::endl;
 		file.close();
 	}
 }

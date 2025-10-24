@@ -19,8 +19,10 @@ struct config {
 	break: 30 minutes game blocking every 2 hours
 	sleep: block game during 11pm and 7am
 	*/
-	bool healthsleep, healthbreak, internalres,scale;
+	bool healthsleep, healthbreak, internalres,scale,
+	crtmode;
 	short viewdistance, fov,resolution;
+	std::string itemserver;
 	config();
 	void load();
 	void save();
