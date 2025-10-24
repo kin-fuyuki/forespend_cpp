@@ -1,6 +1,6 @@
 rm -f out/*/bin/*
-make linux
-make windows
+make linux -j8
+make windows -j8
 #make android5
 #make android9
 #make android13
