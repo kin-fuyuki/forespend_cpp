@@ -67,6 +67,7 @@ bool f3=false;
 			for (int i = 0; i < menu[page]->items.size(); i++) {
 				if (pagebefore!=page)break;
 				auto* item=menu[page]->items[i];
+				
 				int x=item->x*relresx;
 				int y=item->y*relresy;
 				int w=item->w*relresx;
