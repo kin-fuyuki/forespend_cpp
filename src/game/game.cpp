@@ -11,11 +11,11 @@ short nextscene=0;
 Shader shd;
 RenderTexture2D rndr;
 void init() {
+	cfg.load();
 	p=&page;
 	pagem=0;
 	page=-1;
 	startup(CSTR(NAME),CSTR(VERSION));
-	cfg.load();
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
@@ -31,14 +31,13 @@ void init() {
 	prevresy=winheight;
 	relresx=(float)winwidth/(float)renderw;
 	relresy=(float)winheight/(float)renderh;
-	menum.init();
-	world.init();
+	current->init();
 	error("gl version: %i",rlGetVersion());
-	shd=LoadShader("res/shaders/screen.vs","res/shaders/screen.fs");
+	shd=LoadShader(AT("res/shaders/screen.vs"),AT("res/shaders/screen.fs"));
 	SetExitKey(KEY_NULL);
 	
 	rndr=LoadRenderTexture(renderw,renderh);
-	menufont=LoadFont("res/fonts/dos.fnt");
+	menufont=LoadFont(AT("res/fonts/dos.fnt"));
 	SetTextureFilter(menufont.texture, TEXTURE_FILTER_POINT);
 }
 void close() {
@@ -54,9 +53,12 @@ void mouse(int button,int state,int x,int y) {
 
 unsigned long now=0;
 unsigned long prv=0;
+
 unsigned long delta=0;
 short updatems=1;
 void timer(int value) {
+	int hihi;
+	
 	now=__rdtsc();
 	delta=now-prv;
 	echo("delta %i",delta);
@@ -90,14 +92,21 @@ void render() {
 					page=-1;
 					p=&pagem;
 					changescene=false;
+					current->close();
+					
 					current=&menum;
+					world=map();
+					current->init();
 					break;
 				case 1:
 					pagem=0;
 					page=-1;
 					p=&page;
 					changescene=false;
+					current->close();
 					current=&world;
+					menum=mainmenu();
+					current->init();
 					break;
 		}
 	}

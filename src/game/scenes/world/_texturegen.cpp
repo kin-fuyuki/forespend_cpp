@@ -295,6 +295,7 @@ void updatetextures(){
 
 
 int width = skybox.width;
+if (row>7) row=0;
 int height = first?skybox.height:rows[row][1];
 //int height =80;
 

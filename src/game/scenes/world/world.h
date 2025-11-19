@@ -21,6 +21,7 @@ extern	int flip;
 extern	bool f1,f3;
 extern	bool drawnworld;
 extern	bool headdown;
+extern	bool drawinv;
 extern	float headbob;
 extern	float y;
 extern	bool onsurface;
@@ -58,14 +59,15 @@ extern	bool			thirdperson;
 extern	Font			debugfont;
 
 
-extern	Texture2D		tilesheet;//
-extern	Texture2D 		tilemapp;//
-extern	Image 			sheet;//
-extern	Image 			skybox;//
+extern	Texture2D		tilesheet;
+extern	Texture2D 		tilemapp;
+extern	Image 			sheet;
+extern	Image 			skybox;
 extern	Image			tilemaptx;
 extern	Texture 		playercursor;
 extern	Texture 		skytexture;
 extern	Texture			toolbar;
+extern	Texture			inventory;
 
 extern	Shader			toolbarshader;
 extern	Material 		basicmat;

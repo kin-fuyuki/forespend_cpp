@@ -8,7 +8,7 @@ std::string NAME=		"forespend"				;
 std::string VERSION=	"0.03g"					;
 std::string PATH=		"../"					;
 
-scene* current=&world;
+scene* current=&menum;
 //scene* current=&menum;
 int main(int argc, char* argv[]) {
 	init();
@@ -33,7 +33,6 @@ static void* call_main_thread(void* /*unused*/) {
 
 extern "C" void android_main(struct android_app* app) {
     app_dummy(); // ensure native_app_glue linked
-
     int events;
     struct android_poll_source* source;
 

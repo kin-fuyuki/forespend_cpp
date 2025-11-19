@@ -7,6 +7,16 @@
 #define STARTINGRES		STARTINGRESX, STARTINGRESY
 #include 	<string>
 #include	<map>
+#ifdef mobile
+#define FS(x)
+#define PATHGAME "/data/data/kn.endgames.forespend/files/"
+#else
+#define PATHGAME ""
+
+#endif
+#define AT(x) PATHGAME x
+
+
 extern std::string NAME;
 extern std::string VERSION;
 extern std::string PATH;
@@ -22,7 +32,7 @@ struct config {
 	bool healthsleep, healthbreak, internalres,scale,
 	crtmode;
 	short viewdistance, fov,resolution;
-	std::string itemserver;
+	std::string itemserver,player;
 	config();
 	void load();
 	void save();

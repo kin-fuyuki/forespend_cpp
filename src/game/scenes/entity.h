@@ -20,6 +20,7 @@ std::string	desc;
 	int 	id;
 	char	frames;
 	char	frame;
+	short	framew,framwh;
 	char	sides;
 	char	framepside;
 	bool	singlesprite;

@@ -3,6 +3,7 @@
 
 bool f1=true;
 bool f3=false;
+bool drawinv=false;
 #ifndef WORLDUPDATE
 	float sped=0.f;
 	bool statsflipflop=true;
@@ -12,23 +13,11 @@ bool f3=false;
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	void map::update(){
 		if (IsKeyPressed(KEY_F11)){
 			mustupdate=true;
 			UnloadShader(tilemat.shader);
-			tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
+			tilemat.shader=LoadShader(AT("res/shaders/tile.vs"),AT("res/shaders/tile.fs"));
 			tilemaploc  = GetShaderLocation(tilemat.shader, "tilemap");
 			sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
 			MVPloc = GetShaderLocation(tilemat.shader, "mvp");
@@ -42,6 +31,9 @@ bool f3=false;
 			updatechunks();
 			mustupdate=false;
 		}
+		if (IsKeyPressed(KEY_V)){
+			drawinv=!drawinv;
+		}
 		if (IsKeyReleased(KEY_F1)){
 			fatal("f1 %i",f1?1:0);
 			f1=!f1;
@@ -52,7 +44,7 @@ bool f3=false;
 			page=page==-1?0:-1;
 		}
 		int pagebefore=page;
-		if (page!=-1){
+		if (page>-1){
 			int mx=GetMouseX();
 			int my=GetMouseY();
 		if (cfg.internalres){
@@ -153,8 +145,7 @@ bool f3=false;
 		my/=(liquid*6.)+1.;}
 		float totalspeed=sqrt(mx*mx+my*my)*(sprinting?0.5:1.);
 		sped=totalspeed;
-		float bob=0.;//headdown?-totalspeed/4:totalspeed/4;
-//		headbob+=onground?bob:0.f;
+		float bob=0.;
 		float tcos=cos(player.yaw);
 		float tsin=sin(player.yaw);
 		float amx=mx>0?1.:mx<0?-1.:0;
@@ -163,7 +154,7 @@ bool f3=false;
 		float targetz=player.z+((mx+amx)*tsin+(my+amy)*tcos);
 		short ttx=((short)(targetx/4)+512);
 		short ttz=1024-((short)(targetz/4.)+512);
-		if (targetz>0)ttz--; // wont work cuz ur not taking rotation into consideration
+		if (targetz>0)ttz--;
 		if (targetx<0)ttx--;
 		unsigned char targettile=tiles[(int)ttx+size*(int)ttz];
 		if (currenttile!=targettile){
@@ -205,7 +196,6 @@ bool f3=false;
 			camy=0;
 		}
 		playerroty+=camy/2;
-		//echo ("playerrotx %f playerroty %f",playerrotx,playerroty);
 		int prevy=(int)player.y;
 		player.x=camera.position.x;
 		player.y=camera.position.y-(1.6+headbob);
@@ -213,47 +203,47 @@ bool f3=false;
 		Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
 		player.yaw=atan2f(forward.z, forward.x);
 		if (player.y>=150&&prevy<150){
-		tilesheet = LoadTexture("res/images/tilesheetl1.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl1.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}else if (player.y<150&&prevy>=150){
-		tilesheet = LoadTexture("res/images/tilesheet.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheet.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}
 		else if(player.y>=200&&prevy<200){
-		tilesheet = LoadTexture("res/images/tilesheetl2.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl2.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();		
 		}else if(player.y<200&&prevy>=200){
-		tilesheet = LoadTexture("res/images/tilesheetl1.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl1.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}
 		else if (player.y>=280&&prevy<280){
-		tilesheet = LoadTexture("res/images/tilesheetl3.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl3.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}else if (player.y<280&&prevy>=280){
-		tilesheet = LoadTexture("res/images/tilesheetl2.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl2.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}
 		else if (player.y>=360&&prevy<360){
-		tilesheet = LoadTexture("res/images/tilesheetl4.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl4.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}else if (player.y<360&&prevy>=360){
-		tilesheet = LoadTexture("res/images/tilesheetl3.png");
+		tilesheet = LoadTexture(AT("res/images/tilesheetl3.png"));
 		sheet=LoadImageFromTexture(tilesheet);
 		updatetextures();
 		}
 		texturesupdt++;
 		if (texturesupdt>60){
 			texturesupdt=0;
-			y+=0.1;
+			y+=1;
 			updatetextures();
-			hourcycle+=0.001;
+			hourcycle+=0.01;
 			if (hourcycle>=1.){
 				hourcycle=0;
 				daytime=daytime==5?daytime=0:daytime+1;
@@ -404,7 +394,7 @@ bool			thirdperson=false;
 		long setend = __rdtsc();
 		long end = __rdtsc();
 		if (drawnworld){
-		tilemaptx=LoadImage("res/images/coolworld.png");
+		tilemaptx=LoadImage(AT("res/images/coolworld.png"));
 		for (int i = 0; i < size*size; i++) {
 			tiles[i]=((unsigned char*)tilemaptx.data)[i];
 		}

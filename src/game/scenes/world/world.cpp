@@ -1,4 +1,5 @@
 #include "world.h"
+#include <raylib.h>
 #include <vector>
 #include <string>
 #define MAX_MATERIAL_MAPS
@@ -26,6 +27,7 @@ Image skybox;
 Texture skytexture;
 Texture playercursor;
 Texture toolbar;
+Texture inventory;
 Shader toolbarshader;
 Font debugfont;
 Font menufont;
@@ -64,23 +66,26 @@ void map::init(){
 	third.fovy = (float)cfg.fov/1.5;
 	third.projection = CAMERA_CUSTOM;
 	skycolor=(Color){255,255,255,255};
-	skybox=LoadImage("res/images/sky.png");
 	cameras[0]=&camera;
 	cameras[1]=&third;
+	rlSetClipPlanes(.2, 1000.0);
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
-	toolbarshader=LoadShader("res/shaders/toolbar.vs","res/shaders/toolbar.fs");
-	playercursor=LoadTexture("res/images/playercursor.png");
-	debugfont=LoadFont("res/fonts/kipsynth.ttf");
-	toolbar=LoadTexture("res/images/menubar.png");
-	
-	rlSetClipPlanes(.2, 1000.0);
+	skybox=LoadImage(AT("res/images/sky.png"));
+	toolbarshader=LoadShader(AT("res/shaders/toolbar.vs"),AT("res/shaders/toolbar.fs"));
+	playercursor=LoadTexture(AT("res/images/playercursor.png"));
+	debugfont=LoadFont(AT("res/fonts/kipsynth.ttf"));
+	toolbar=LoadTexture(AT("res/images/menubar.png"));
+	inventory=LoadTexture(AT("res/images/invbg.png"));
+	worldmodel=LoadModel(AT("res/models/world.obj"));
+	tilesheet = LoadTexture(AT("res/images/tilesheet.png"));
+	tilemat.shader=LoadShader(AT("res/shaders/tile.vs"),AT("res/shaders/tile.fs"));
 
-	tilesheet = LoadTexture("res/images/tilesheet.png");
 	//SetTextureFilter(tilesheet, TEXTURE_FILTER_N);
 
-	tilemat.shader=LoadShader("res/shaders/tile.vs","res/shaders/tile.fs");
-	//
+	
+	
+	
 	tilemaploc  = GetShaderLocation(tilemat.shader, "tilemap");
 	sheetloc= GetShaderLocation(tilemat.shader, "tilesheet");
 	MVPloc = GetShaderLocation(tilemat.shader, "mvp");
@@ -98,7 +103,7 @@ void map::init(){
 	fatigueloc = GetShaderLocation(toolbarshader, "fatigue");
 	radioloc = GetShaderLocation(toolbarshader, "radioactivity");
 	xploc = GetShaderLocation(toolbarshader, "xp");
-	worldmodel=LoadModel("res/models/world.obj");
+	
 	//
 	echo("meshcount %i",worldmodel.meshCount);
 	echo("materialcount %i",worldmodel.materialCount);
@@ -142,7 +147,7 @@ map::~map(){
 	
 	UnloadImage(sheet);
 	UnloadImage(skybox);
-	UnloadImage(tilemaptx);
+	//UnloadImage(tilemaptx);
 	
 	UnloadMaterial(basicmat);
 	UnloadShader(toolbarshader);
@@ -153,7 +158,8 @@ map::~map(){
 
 void map::close(){
 	unsigned char *data=new unsigned char[size*size*3];
-	tilesheet = LoadTexture("res/images/tilesheetl4.png");
+	
+	tilesheet=LoadTexture(AT("res/images/tilesheetl4.png"));
 	sheet=LoadImageFromTexture(tilesheet);
 	for (int i = 0; i < size*size; i++) {
 		unsigned char tile = ((unsigned char*)tilemaptx.data)[i];
@@ -164,7 +170,7 @@ void map::close(){
 		data[i*3+2]=((unsigned char*)sheet.data)[(ytilecoord*16+xtilecoord)*4+2];
 		
 	}
-	savebmp("tilemap.bmp",data,
+	savebmp(AT("tilemap.bmp"),data,
 	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width:tilemaptx.width
 	,tilemaptx.height);
 }

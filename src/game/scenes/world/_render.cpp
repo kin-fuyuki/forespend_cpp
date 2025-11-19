@@ -72,13 +72,16 @@ void map::render(){
 	DrawMesh(worldmodel.meshes[0],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	DrawMesh(worldmodel.meshes[1],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
 	DrawMesh(worldmodel.meshes[2],tilemat,Matrix{1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1});
-	
-	DrawCube((Vector3){0,0,0},1,1,1,WHITE);
-	
+	Color skycil;
+	skycil.r=daycol[0]*255;
+	skycil.g=daycol[1]*255;
+	skycil.b=daycol[2]*255;
+	skycil.a=255;
+	DrawCube((Vector3){0,0,0},1,1,1,skycil);
 	DrawBillboardRec(camera,*player.fs[player.frame],
-		Rectangle{0,0,(float)1,2},
+		Rectangle{0,0,(float)player.framew,(float)player.framwh},
 		Vector3{(float)player.x,player.y+1,player.z},
-		Vector2{1.,2.},WHITE);
+		Vector2{1.,2.},skycil);
 	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);
@@ -104,8 +107,11 @@ void map::render(){
 +"\nX:"+std::to_string((int)player.x)+" Y:"+std::to_string((int)player.y)+" Z:"+std::to_string((int)player.z)
 +"\ntile:"+std::to_string(((int)currenttile))+" worldx:"+std::to_string((int)ptx)+" worldz:"+std::to_string((int)ptz)
 +"\nspeed:"+std::to_string((int)(sped*60))+"m/s";
-	BeginShaderMode(toolbarshader);
+	if (f3){
+		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 17*relresx, 2*relresy, WHITE);
+	}
 	if (f1){
+	BeginShaderMode(toolbarshader);
 	DrawTexturePro(toolbar, (Rectangle){0,0,(float)toolbar.width,(float)toolbar.height},
 	(Rectangle){0,
 		
@@ -120,10 +126,11 @@ void map::render(){
 :			toolbar.height)
 	}, Vector2{0,0}, 0, WHITE);
 	EndShaderMode();
-	if (f3){
-		DrawTextEx(menufont,pos.c_str(),(Vector2){0,0}, 17*relresx, 2*relresy, WHITE);
-	}
 	
+	
+	}
+	if (drawinv){
+		DrawTexture(inventory,0,0,WHITE);
 	}
 	rendermenu();
 	//fatal("f1 %i",f1);	

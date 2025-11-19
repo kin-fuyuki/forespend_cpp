@@ -2,7 +2,9 @@
 CFILES := $(shell find src/ -type f -name "*.cpp")
 INCS := -I/usr/local/include/
 LIBS := -lraylib
-FLAGS := -std=c++23 -g -w -ffast-math -Ofast
+FLAGS := -std=c++23 -g -w -ffast-math
+FLAGS +=  -Ofast
+#FLAGS += -O0
 #FLAGS += -fsanitize=address
 WINDOWSFLAGS := --target=x86_64-w64-mingw32 -mconsole ${F}
 WLINKS := -lopengl32 -lgdi32 -lwinmm
@@ -100,4 +102,3 @@ out/linux/bin/l5-testing.64: $(LSOS) liblinks
 clean:
 	@echo "cleaning build, out/*/bin and out/*/lib"
 	@rm -rf build/
-	@rm -f out/*/lib/*

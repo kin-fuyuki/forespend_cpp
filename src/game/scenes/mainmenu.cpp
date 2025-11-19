@@ -18,7 +18,7 @@ mainmenu::~mainmenu(){
 }
 void mainmenu::init(){
 	frames=0;
-	skybg = LoadImageAnim("res/images/sky.gif",&frames);
+	skybg = LoadImageAnim(AT("res/images/sky.gif"),&frames);
 	skytx = LoadTextureFromImage(skybg);
 }
 int fontsize=8;

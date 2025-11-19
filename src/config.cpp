@@ -3,7 +3,7 @@
 #include<fstream>
 #include <iostream>
 #include <filesystem>
-std::string savefile = "save.cfg";
+std::string savefile = AT("save.cfg");
 config::config() {
 	firstlaunch=true;
 	healthsleep=false;
@@ -14,6 +14,7 @@ config::config() {
 	internalres=true;
 	scale=4;
 	itemserver="kosumi.ddns.net:64001";
+	player="";
 	load();
 }
 
@@ -43,6 +44,7 @@ void config::load() {
 			if (cat=="gr.scale") scale=atoi(key.c_str());
 			if (cat=="gr.crtmode") crtmode=key=="true";
 			if (cat=="svr.item") itemserver=key;
+			if (cat=="game.player") player=key;
 			scale=scale>10||scale<1?1:scale;
 		}
 			
@@ -63,6 +65,7 @@ void config::save() {
 		file << "gr.internalres=" << (internalres?"true":"false") << std::endl;
 		file << "gr.scale=" << scale << std::endl;
 		file << "svr.item=" << itemserver << std::endl;
+		file << "game.player=" << player << std::endl;
 		file.close();
 	}
 }

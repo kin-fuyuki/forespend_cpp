@@ -1,4 +1,5 @@
 #include "entity.h"
+#include "scenes.h"
 #include "../../libs/yyjson.h"
 #include<fstream>
 #include <iostream>
@@ -9,7 +10,7 @@ Texture2D singletex={0,-1,0,0,0};
 entity::entity(){
 std::string defaultplayer = "res/defaultplayer/";
 	FILE *p_file = NULL;
-	std::string path = defaultplayer + "player.json";
+	std::string path = PATHGAME+defaultplayer + "player.json";
 	std::cerr << path << "\n";
 	std::cerr << path << "\n";
 	std::cerr << path << "\n";
@@ -18,11 +19,11 @@ std::string defaultplayer = "res/defaultplayer/";
 	std::cerr << path << "\n";
 	std::cerr << path << "\n";
 
-	p_file = fopen(std::string(defaultplayer+"player.json").c_str(),"rb");
+	p_file = fopen(path.c_str(),"rb");
 	fseek(p_file,0,SEEK_END);// sigsegv
 	int size = ftell(p_file);
 	fclose(p_file);
-	std::ifstream file(std::string(defaultplayer+"player.json").c_str());
+	std::ifstream file(path.c_str());
 	frame=0;
 	if (file.is_open()) {
 		char *filec = new char[size + 1];
@@ -50,9 +51,20 @@ std::string defaultplayer = "res/defaultplayer/";
 	
 }
 void entity::init(){
-std::string defaultplayer = "res/defaultplayer/";
+	
+std::string defaultplayer="";
+
+	fatal("player config: %s",cfg.player.c_str());
+if (cfg.player!="")
+defaultplayer = PATHGAME + std::string("player/") + cfg.player.c_str() + std::string("/");
+else
+defaultplayer = AT("res/defaultplayer/");
 	if(singletex.width==-1)
 	singletex=LoadTexture((defaultplayer+"player.png").c_str());
+	framew=singletex.width;
+	framwh=singletex.height;
 	fs.push_back(&singletex);
-	
+	fatal ("mode: %s",singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8A8?"RGBA8":
+		singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8?"RGB8":
+		"other");
 }
