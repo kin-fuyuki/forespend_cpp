@@ -12,14 +12,17 @@ short pagem=0;
 void rendermenum();
 mainmenu::mainmenu(){}
 mainmenu::~mainmenu(){
-	UnloadTexture(skytx);
-	UnloadImage(skybg);
 	
 }
 void mainmenu::init(){
 	frames=0;
 	skybg = LoadImageAnim(AT("res/images/sky.gif"),&frames);
 	skytx = LoadTextureFromImage(skybg);
+}
+void mainmenu::close(){
+	
+	UnloadImage(skybg);
+	UnloadTexture(skytx);
 }
 int fontsize=8;
 void mainmenu::update(){
@@ -84,7 +87,6 @@ void mainmenu::render(){
 	
 	rendermenum();
 }
-void mainmenu::close(){}
 #include "../game.h"
 std::vector<menupage*> memum={
 	new menupage{{

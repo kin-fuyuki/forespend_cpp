@@ -1,6 +1,6 @@
 #pragma once
 #include"../../config.h"
-#include "../../term.h"
+#include "../../libs/term.h"
 #include"../io.h"
 #include<raylib.h>
 #include <rlgl.h>
@@ -21,6 +21,7 @@ std::string	desc;
 	char	frames;
 	char	frame;
 	short	framew,framwh;
+	float	scalex,scaley;
 	char	sides;
 	char	framepside;
 	bool	singlesprite;

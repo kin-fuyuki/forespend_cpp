@@ -32,26 +32,23 @@ static void* call_main_thread(void* /*unused*/) {
 }
 
 extern "C" void android_main(struct android_app* app) {
-    app_dummy(); // ensure native_app_glue linked
+    app_dummy();
     int events;
     struct android_poll_source* source;
 
-    // wait until a window/surface is available
     while (1) {
         while (ALooper_pollAll(-1, nullptr, &events, (void**)&source) >= 0) {
             if (source) source->process(app, source);
             if (app->destroyRequested) return;
         }
-        if (app->window) break; // ready to create EGL / window-backed rendering
+        if (app->window) break;
     }
 
-    // start main in a background thread (UI thread not blocked)
     pthread_t thr;
     if (pthread_create(&thr, nullptr, call_main_thread, nullptr) != 0) {
         return;
     }
 
-    // keep processing events until the activity is destroyed
     while (!app->destroyRequested) {
         while (ALooper_pollAll(0, nullptr, &events, (void**)&source) >= 0) {
             if (source) source->process(app, source);
@@ -59,7 +56,6 @@ extern "C" void android_main(struct android_app* app) {
         usleep(10000);
     }
 
-    // wait for main thread to finish
     pthread_join(thr, nullptr);
 }
 

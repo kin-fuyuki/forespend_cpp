@@ -1,6 +1,5 @@
 #version 330 core
 in vec2 fragTexCoord;
-uniform vec4 fragColor;
 in vec3 normal;
 in vec3 pos;
 uniform vec3 campos;
@@ -8,6 +7,7 @@ uniform sampler2D tilemap;
 uniform sampler2D tilesheet;
 uniform vec2 size;
 uniform int cols;
+uniform vec4 fragColor;
 out vec4 FragColor;
 float dist;
 vec3 n=normalize(normal);
@@ -81,7 +81,6 @@ vec4 textured(){
 			
 			idx+=5;
 		}else{
-			if (idx<=250){discard;}
 		}
 	}
     int x = idx % cols;

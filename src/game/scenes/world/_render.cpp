@@ -78,10 +78,11 @@ void map::render(){
 	skycil.b=daycol[2]*255;
 	skycil.a=255;
 	DrawCube((Vector3){0,0,0},1,1,1,skycil);
+	fatal("scalex %f scaley %f",player.scalex,player.scaley);
 	DrawBillboardRec(camera,*player.fs[player.frame],
 		Rectangle{0,0,(float)player.framew,(float)player.framwh},
 		Vector3{(float)player.x,player.y+1,player.z},
-		Vector2{1.,2.},skycil);
+		Vector2{player.scalex,player.scaley},skycil);
 	
 	EndMode3D();
 	//DrawTexture(tilesheet,0,180,WHITE);
@@ -130,6 +131,13 @@ void map::render(){
 	
 	}
 	if (drawinv){
+		if (!cfg.internalres)
+		DrawTexturePro(inventory,
+			(Rectangle){0,0,(float)360,(float)240},
+			(Rectangle){0,0,(float)GetScreenWidth(),(float)GetScreenHeight()},
+			Vector2(0,0),0
+			,WHITE);
+		else
 		DrawTexture(inventory,0,0,WHITE);
 	}
 	rendermenu();

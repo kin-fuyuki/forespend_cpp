@@ -7,7 +7,7 @@ uniform vec4 colDiffuse;
 const float BITS=8.0;
 uniform bool DITHER=false;
 uniform bool DEPTH=true;
-uniform bool BLOOM=false;
+uniform bool BLOOM=true;
 uniform bool BLUR=false;
 uniform float redbits=4.;
 uniform float greenbits=4.;

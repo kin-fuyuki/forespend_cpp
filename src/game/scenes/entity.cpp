@@ -1,6 +1,6 @@
 #include "entity.h"
 #include "scenes.h"
-#include "../../libs/yyjson.h"
+#include "../../libs/tdf.h"
 #include<fstream>
 #include <iostream>
 #include <filesystem>
@@ -8,50 +8,10 @@
 
 Texture2D singletex={0,-1,0,0,0};
 entity::entity(){
-std::string defaultplayer = "res/defaultplayer/";
-	FILE *p_file = NULL;
-	std::string path = PATHGAME+defaultplayer + "player.json";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-	std::cerr << path << "\n";
-
-	p_file = fopen(path.c_str(),"rb");
-	fseek(p_file,0,SEEK_END);// sigsegv
-	int size = ftell(p_file);
-	fclose(p_file);
-	std::ifstream file(path.c_str());
-	frame=0;
-	if (file.is_open()) {
-		char *filec = new char[size + 1];
-		filec[size] = '\0';
-		file.read(filec, sizeof(filec));
-		yyjson_doc *doc = yyjson_read(filec,size, 0);
-		if (doc) {
-			yyjson_val *root = yyjson_doc_get_root(doc);
-			yyjson_val *namee = yyjson_obj_get(root, "name");
-			yyjson_val *descc = yyjson_obj_get(root, "description");
-			yyjson_val *single = yyjson_obj_get(root, "singlesprite");
-			
-			// Check for NULL before assigning to std::string
-			const char *namestr = yyjson_get_str(namee);
-			const char *descstr = yyjson_get_str(descc);
-			
-			name = namestr ? namestr : "";
-			desc = descstr ? descstr : "";
-			singlesprite = yyjson_get_bool(single);
-			
-			yyjson_doc_free(doc);
-		}
-		delete[] filec;
-	}
 	
 }
 void entity::init(){
-	
+
 std::string defaultplayer="";
 
 	fatal("player config: %s",cfg.player.c_str());
@@ -67,4 +27,22 @@ defaultplayer = AT("res/defaultplayer/");
 	fatal ("mode: %s",singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8A8?"RGBA8":
 		singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8?"RGB8":
 		"other");
+			FILE *p_file = NULL;
+	std::string path = PATHGAME+defaultplayer + "player.tdf";
+	tiny::TDF_FILE file;
+	file.path = (char*)path.c_str();
+	file.read();
+	
+	std::string name=*(std::string*)((file.data->at("name")).datapointer);
+	desc=*(std::string*)((file.data->at("description")).datapointer);
+	singlesprite=*(bool*)((file.data->at("singlesprite")).datapointer);
+	scalex=*(float*)((file.data->at("width")).datapointer)+0.001;
+	scaley=*(float*)((file.data->at("height")).datapointer)+0.001;
+	fatal("scale x %i y %i",scalex,scaley);
+	fatal("scale x %i y %i",scalex,scaley);
+	fatal("scale x %i y %i",scalex,scaley);
+	fatal("scale x %i y %i",scalex,scaley);
+	fatal("scale x %i y %i",scalex,scaley);
+	file.close();
+	
 }

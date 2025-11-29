@@ -55,7 +55,7 @@ map::map(){
 void map::init(){
 	player.init();
 	worldSizeV[0] = (float)size;worldSizeV[1] = (float)size;
-	camera.position = (Vector3){0.0f, 1.3f, 0.0f};
+	camera.position = (Vector3){0.0f, 3.3f, 0.0f};
 	camera.target = (Vector3){8.0f, 0.0f, 8.0f};
 	camera.up = (Vector3){0.0f, 1.0f, 0.0f};
 	camera.fovy = (float)cfg.fov;
@@ -68,7 +68,7 @@ void map::init(){
 	skycolor=(Color){255,255,255,255};
 	cameras[0]=&camera;
 	cameras[1]=&third;
-	rlSetClipPlanes(.2, 1000.0);
+	rlSetClipPlanes(.2, 10000.0);
 	tilemapp=LoadTextureFromImage(tilemaptx);
 	tilemat=LoadMaterialDefault();
 	skybox=LoadImage(AT("res/images/sky.png"));
@@ -137,23 +137,7 @@ void map::init(){
 }
 
 map::~map(){
-	UnloadModel(worldmodel);
-	
-	UnloadTexture(tilesheet);
-	UnloadTexture(tilemapp);
-	UnloadTexture(skytexture);
-	UnloadTexture(playercursor);
-	UnloadTexture(toolbar);
-	
-	UnloadImage(sheet);
-	UnloadImage(skybox);
-	//UnloadImage(tilemaptx);
-	
-	UnloadMaterial(basicmat);
-	UnloadShader(toolbarshader);
-	
-	UnloadFont(debugfont);
-	UnloadFont(menufont);
+
 }
 
 void map::close(){
@@ -170,9 +154,28 @@ void map::close(){
 		data[i*3+2]=((unsigned char*)sheet.data)[(ytilecoord*16+xtilecoord)*4+2];
 		
 	}
+	
 	savebmp(AT("tilemap.bmp"),data,
 	tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE?tilemaptx.width:tilemaptx.width
 	,tilemaptx.height);
+	UnloadTexture(tilesheet);
+	UnloadImage(sheet);
+	delete[] data;
+		UnloadModel(worldmodel);
+	
+	UnloadTexture(tilesheet);
+	UnloadTexture(tilemapp);
+	UnloadTexture(skytexture);
+	UnloadTexture(playercursor);
+	UnloadTexture(toolbar);
+	
+	UnloadImage(skybox);
+	
+	UnloadMaterial(basicmat);
+	UnloadShader(toolbarshader);
+	
+	UnloadFont(debugfont);
+	UnloadFont(menufont);
 }
 std::vector<menupage*> menu={
 		new menupage{//main
