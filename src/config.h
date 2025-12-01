@@ -16,6 +16,7 @@
 #endif
 #define AT(x) PATHGAME x
 
+#include "libs/tdf.h"
 
 extern std::string NAME;
 extern std::string VERSION;
@@ -29,16 +30,18 @@ struct config {
 	break: 30 minutes game blocking every 2 hours
 	sleep: block game during 11pm and 7am
 	*/
+	
 	bool healthsleep, healthbreak, internalres,scale,
 	crtmode;
-	short viewdistance, fov,resolution;
+	float viewdistance, fov,resolution;
 	std::string itemserver,player;
 	config();
+	~config();
 	void load();
 	void save();
 private:
 bool firstlaunch;
-	
+tiny::TDF_FILE f;
 };
 
 

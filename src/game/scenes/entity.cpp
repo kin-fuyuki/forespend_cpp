@@ -30,7 +30,7 @@ defaultplayer = AT("res/defaultplayer/");
 			FILE *p_file = NULL;
 	std::string path = PATHGAME+defaultplayer + "player.tdf";
 	tiny::TDF_FILE file;
-	file.path = (char*)path.c_str();
+	file.filepath = (char*)path.c_str();
 	file.read();
 	
 	std::string name=*(std::string*)((file.data->at("name")).datapointer);
