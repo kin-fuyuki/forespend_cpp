@@ -314,7 +314,7 @@ int startz=first?0:rows[row][0];
 	row=++row==9?0:row;
 first=false;
 	long end = __rdtsc();
-	success("cycles: %s", FORMAT_NUM(end - start));
+	tiny::success("cycles: %s", FORMAT_NUM(end - start));
 	
 	UpdateTexture(tilesheet, sheet.data);
 	UpdateTexture(skytexture, skybox.data);

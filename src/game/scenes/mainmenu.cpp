@@ -37,7 +37,7 @@ void mainmenu::update(){
             nextFrameDataOffset = skybg.width*skybg.height*4*frame;
 			
             UpdateTexture(skytx, ((unsigned char *)skybg.data) + nextFrameDataOffset);
-			fatal("frame %i",frame);
+			tiny::fatal("frame %i",frame);
 
             counter = 0;
         }
@@ -134,13 +134,12 @@ void rendermenum(){
 					buttonitem->down?Color{180, 150, 150, 100}:
 					buttonitem->hover?Color{100, 100, 0, 0}:Color{50, 50, 0, 0}
 				);
-				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
 					w/2-(((float)buttonitem->text.size())*(sizef*sx)/2)+x		,
 					(float)y+(h/2-((15+((pagem==0)*9))*sy/2))
 				};
-					echo("textPos %f %f",textPos.x,textPos.y);
-					echo("x %i y %i w %i h %i",x,y,w,h);
+					tiny::echo("textPos %f %f",textPos.x,textPos.y);
+					tiny::echo("x %i y %i w %i h %i",x,y,w,h);
 				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, sizef*sx, 3*sx, 
 					buttonitem->down?Color{255, 255, 255, 255}:
 					buttonitem->hover?Color{255, 150, 100, 255}:Color{255, 150, 0, 255}
@@ -151,8 +150,8 @@ void rendermenum(){
 					w/2-(((float)textitem->text.size())*(sizef*sx)/2)+x		,
 					(float)y+(h/2-((15+((pagem==0)*9))*sy/2))
 				};
-					echo("textPos %f %f",textPos.x,textPos.y);
-					echo("x %i y %i w %i h %i",x,y,w,h);
+					tiny::echo("textPos %f %f",textPos.x,textPos.y);
+					tiny::echo("x %i y %i w %i h %i",x,y,w,h);
 				DrawTextEx(menufont,textitem->text.c_str(),textPos, sizef*sx, 3*sx, Color{255, 255, 255, 255});
 			}else if(auto* edititem = dynamic_cast<menucolor*>(item)){
 				DrawRectangle(x, y, w, h, *edititem->value);

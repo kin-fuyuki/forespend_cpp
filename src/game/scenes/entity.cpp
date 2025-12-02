@@ -14,7 +14,7 @@ void entity::init(){
 
 std::string defaultplayer="";
 
-	fatal("player config: %s",cfg.player.c_str());
+	tiny::fatal("player config: %s",cfg.player.c_str());
 if (cfg.player!="")
 defaultplayer = PATHGAME + std::string("player/") + cfg.player.c_str() + std::string("/");
 else
@@ -24,7 +24,7 @@ defaultplayer = AT("res/defaultplayer/");
 	framew=singletex.width;
 	framwh=singletex.height;
 	fs.push_back(&singletex);
-	fatal ("mode: %s",singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8A8?"RGBA8":
+	tiny::fatal ("mode: %s",singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8A8?"RGBA8":
 		singletex.format==PIXELFORMAT_UNCOMPRESSED_R8G8B8?"RGB8":
 		"other");
 			FILE *p_file = NULL;
@@ -38,11 +38,7 @@ defaultplayer = AT("res/defaultplayer/");
 	singlesprite=*(bool*)((file.data->at("singlesprite")).datapointer);
 	scalex=*(float*)((file.data->at("width")).datapointer)+0.001;
 	scaley=*(float*)((file.data->at("height")).datapointer)+0.001;
-	fatal("scale x %i y %i",scalex,scaley);
-	fatal("scale x %i y %i",scalex,scaley);
-	fatal("scale x %i y %i",scalex,scaley);
-	fatal("scale x %i y %i",scalex,scaley);
-	fatal("scale x %i y %i",scalex,scaley);
+	tiny::fatal("scale x %i y %i",scalex,scaley);
 	file.close();
 	
 }

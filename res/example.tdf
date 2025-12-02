@@ -1,0 +1,31 @@
+#comment
+
+{ class
+i id 1234
+
+{ object
+
+{ attributes
+itemwithoutvalue
+i number 1
+h hex FF
+b bin 1010
+B booltrue T
+B boolfalse F
+f float 3.14
+" text example
+' character x
+S textblock
+line 1
+line2
+
+\
+@ pointer class.id
+}
+#attributes
+
+}
+#object
+
+}
+#class

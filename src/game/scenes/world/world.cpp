@@ -105,8 +105,8 @@ void map::init(){
 	xploc = GetShaderLocation(toolbarshader, "xp");
 	
 	//
-	echo("meshcount %i",worldmodel.meshCount);
-	echo("materialcount %i",worldmodel.materialCount);
+	tiny::echo("meshcount %i",worldmodel.meshCount);
+	tiny::echo("materialcount %i",worldmodel.materialCount);
 	basicmat=LoadMaterialDefault();
 	
 	humiditynoise=FastNoiseLite((this->world*3)+1);

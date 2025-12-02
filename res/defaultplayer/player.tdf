@@ -1,0 +1,18 @@
+" name default player
+S description
+just a boring ass rectangle that does nothing special lmao
+\
+i spritew 16
+i spriteh 32
+f width 1.0
+f height 2.0
+f speed 1.0
+f health 1.0
+f radiores 1.0
+f exhaustres 1.0
+B singlesprite T
+B 3dprerendered F
+# 0 = 1 side	1 = 4 sides		2 = 8 sides (diagonal axes)
+# 3 = 10 sides (top and down)
+i directions 0
+# defines

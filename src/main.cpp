@@ -1,6 +1,9 @@
 
 #include"game/game.h"
 
+tiny::ErrorLevel tiny::level={1};
+
+
 map			world;
 mainmenu 	menum;
 config		cfg;

@@ -78,7 +78,7 @@ void map::render(){
 	skycil.b=daycol[2]*255;
 	skycil.a=255;
 	DrawCube((Vector3){0,0,0},1,1,1,skycil);
-	fatal("scalex %f scaley %f",player.scalex,player.scaley);
+	tiny::fatal("scalex %f scaley %f",player.scalex,player.scaley);
 	DrawBillboardRec(camera,*player.fs[player.frame],
 		Rectangle{0,0,(float)player.framew,(float)player.framwh},
 		Vector3{(float)player.x,player.y+1,player.z},
@@ -102,7 +102,6 @@ void map::render(){
 	SetShaderValue(toolbarshader, radioloc, &stats.radioactivity, SHADER_UNIFORM_FLOAT);
 	SetShaderValue(toolbarshader, xploc, &stats.xp, SHADER_UNIFORM_FLOAT);
 	
-	//fatal("toolbary %i toolbarh %i",toolbary,toolbarh);
 	std::string pos=
 ""+std::to_string(GetFPS())+" version:"+VERSION
 +"\nX:"+std::to_string((int)player.x)+" Y:"+std::to_string((int)player.y)+" Z:"+std::to_string((int)player.z)
@@ -141,7 +140,6 @@ void map::render(){
 		DrawTexture(inventory,0,0,WHITE);
 	}
 	rendermenu();
-	//fatal("f1 %i",f1);	
 	}
 #include <typeinfo>
 #define getitem menu[page]->items
@@ -167,13 +165,12 @@ void map::render(){
 					buttonitem->down?Color{180, 150, 150, 100}:
 					buttonitem->hover?Color{100, 100, 0, 100}:Color{50, 50, 0, 100}
 				);
-				//fatal("hover: %i down: %i",buttonitem->hover?1:0,buttonitem->down?1:0);
 				Vector2 textPos = {
 					w/2-(((float)buttonitem->text.size())*(17*sx)/2)		,
 					(float)y+(h/2-(15*sy/2))
 				};
-					echo("textPos %f %f",textPos.x,textPos.y);
-					echo("x %i y %i w %i h %i",x,y,w,h);
+					tiny::echo("textPos %f %f",textPos.x,textPos.y);
+					tiny::echo("x %i y %i w %i h %i",x,y,w,h);
 				DrawTextEx(menufont,buttonitem->text.c_str(),textPos, 17*sx, 2*sy, WHITE);
 				
 			}else if (auto* textitem = dynamic_cast<menutext*>(item)){
@@ -181,8 +178,8 @@ void map::render(){
 					w/2-(((float)textitem->text.size())*(sx*relresx)/2)+x		,
 					(float)y+(h/2-((15+((page==0)*9))*relresy/2))
 				};
-					echo("textPos %f %f",textPos.x,textPos.y);
-					echo("x %i y %i w %i h %i",x,y,w,h);
+					tiny::echo("textPos %f %f",textPos.x,textPos.y);
+					tiny::echo("x %i y %i w %i h %i",x,y,w,h);
 				DrawTextEx(menufont,textitem->text.c_str(),textPos, sx*relresx, 3*relresx, Color{255, 255, 255, 255});
 			}else if(auto* edititem = dynamic_cast<menucolor*>(item)){
 				DrawRectangle(x, y, w, h, *edititem->value);

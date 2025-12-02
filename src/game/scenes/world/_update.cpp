@@ -35,10 +35,10 @@ bool drawinv=false;
 			drawinv=!drawinv;
 		}
 		if (IsKeyReleased(KEY_F1)){
-			fatal("f1 %i",f1?1:0);
+			tiny::fatal("f1 %i",f1?1:0);
 			f1=!f1;
 		}if (IsKeyReleased(KEY_F3)){
-			fatal("f3 %i",f3?1:0);
+			tiny::fatal("f3 %i",f3?1:0);
 			f3=!f3;
 		}if (IsKeyPressed(KEY_ESCAPE)){
 			page=page==-1?0:-1;
@@ -158,13 +158,13 @@ bool drawinv=false;
 		if (targetx<0)ttx--;
 		unsigned char targettile=tiles[(int)ttx+size*(int)ttz];
 		if (currenttile!=targettile){
-			echo("currenttile %i targettile %i",currenttile,targettile);
+			tiny::echo("currenttile %i targettile %i",currenttile,targettile);
 		}
 		if (targettile<=250&&player.y>=1.01&&(player.y+yaccel<1.01)){
 			yaccel=1.01-player.y;
 		}
 		if (currenttile!=targettile){
-			echo("currenttile %i targettile %i",currenttile,targettile);
+			tiny::echo("currenttile %i targettile %i",currenttile,targettile);
 		}
 		if (currenttile>245&&targettile<250&&player.y<1.){
 			mx=0;my=0;
@@ -400,7 +400,7 @@ bool			thirdperson=false;
 		}
 	}
 		bool naturallygray=tilemaptx.format==PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
-		echo ("size: %s, format: %s", FORMAT_NUM(tilemaptx.width), FORMAT_NUM(tilemaptx.format));
+		tiny::echo ("size: %s, format: %s", FORMAT_NUM(tilemaptx.width), FORMAT_NUM(tilemaptx.format));
 		
 		tilemaptx.format=PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
 		//tilemaptx.width>>=2;
@@ -410,8 +410,8 @@ bool			thirdperson=false;
 		tilemapp=LoadTextureFromImage(tilemaptx);
 		//SetTextureFilter(tilemapp, TEXTURE_FILTER_POINT);
 		UpdateTexture(tilemapp, tilemaptx.data);
-		success("cycles: %s", FORMAT_NUM(end - start));
-		success("terrain gen cycles: %s\nset cycles: %s", FORMAT_NUM(genend - genstart), FORMAT_NUM(setend - setstart));
+		tiny::success("cycles: %s", FORMAT_NUM(end - start));
+		tiny::success("terrain gen cycles: %s\nset cycles: %s", FORMAT_NUM(genend - genstart), FORMAT_NUM(setend - setstart));
 
 	}
 

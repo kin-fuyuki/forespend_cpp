@@ -15,7 +15,7 @@ void init() {
 	p=&page;
 	pagem=0;
 	page=-1;
-	startup(CSTR(NAME),CSTR(VERSION));
+	tiny::startup(CSTR(NAME),CSTR(VERSION));
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	//SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	
@@ -32,7 +32,7 @@ void init() {
 	relresx=(float)winwidth/(float)renderw;
 	relresy=(float)winheight/(float)renderh;
 	current->init();
-	error("gl version: %i",rlGetVersion());
+	tiny::error("gl version: %i",rlGetVersion());
 	shd=LoadShader(AT("res/shaders/screen.vs"),AT("res/shaders/screen.fs"));
 	SetExitKey(KEY_NULL);
 	
@@ -61,7 +61,7 @@ void timer(int value) {
 	
 	now=__rdtsc();
 	delta=now-prv;
-	echo("delta %i",delta);
+	tiny::echo("delta %i",delta);
 	prv=now;
 }
 Color clra={255,0,0,255};

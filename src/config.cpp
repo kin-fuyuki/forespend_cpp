@@ -1,5 +1,4 @@
 #include"config.h"
-#include "term.h"
 #include <cstdlib>
 #include<string.h>
 #include<fstream>
@@ -42,7 +41,7 @@ void config::load() {
 	scale= f.getint({"gr","scale"});
 	scale=scale>10||scale<1?1:scale;}
 	catch(tiny::TDF_ERR e) {
-		fatal((char*)e.what());
+		tiny::fatal((char*)e.what());
 		exit(-1);
 	}
 }
