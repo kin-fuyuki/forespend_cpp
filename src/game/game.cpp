@@ -1,5 +1,4 @@
 #include "game.h"
-#include "../libs/term.h"
 float relresx,relresy;
 float prevresx,prevresy;
 float winwidth,winheight;

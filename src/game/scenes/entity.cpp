@@ -1,6 +1,5 @@
 #include "entity.h"
 #include "scenes.h"
-#include "../../libs/tdf.h"
 #include<fstream>
 #include <iostream>
 #include <filesystem>
@@ -8,12 +7,11 @@
 
 Texture2D singletex={0,-1,0,0,0};
 entity::entity(){
-	
+
 }
 void entity::init(){
-
+	
 std::string defaultplayer="";
-
 	tiny::fatal("player config: %s",cfg.player.c_str());
 if (cfg.player!="")
 defaultplayer = PATHGAME + std::string("player/") + cfg.player.c_str() + std::string("/");
@@ -40,5 +38,8 @@ defaultplayer = AT("res/defaultplayer/");
 	scaley=*(float*)((file.data->at("height")).datapointer)+0.001;
 	tiny::fatal("scale x %i y %i",scalex,scaley);
 	file.close();
+	
+}
+playerentity::playerentity(){
 	
 }

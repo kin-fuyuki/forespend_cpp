@@ -15,10 +15,8 @@
 
 #endif
 #define AT(x) PATHGAME x
-
-#include "libs/tdf.h"
-
-#include "libs/term.h"
+#include <tiny/tdf.h>
+#include <tiny/term.h>
 extern std::string NAME;
 extern std::string VERSION;
 extern std::string PATH;

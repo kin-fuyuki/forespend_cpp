@@ -1,5 +1,5 @@
 CFILES := $(shell find src/ -type f -name "*.cpp")
-INCS := -I/usr/local/include/
+INCS := -I/usr/local/include/ -I/usr/include/
 LIBS := -lraylib
 FLAGS := -std=c++23 -g -w -ffast-math
 FLAGS +=  -O0

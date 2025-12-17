@@ -1,6 +1,5 @@
 #pragma once
 #include"../../config.h"
-#include "../../libs/term.h"
 #include"../io.h"
 #include<raylib.h>
 #include <rlgl.h>
@@ -30,7 +29,8 @@ std::vector<Texture2D*>	fs;
 	void init();
 	//entity(float x,float y,float z);
 	//entity(float x,float y,float z, std::string sprite);
-	/*
+	/*20251212343746487E25FB
+
 	
 	x+ = 0 x- = 1 --|-- z+ = 2 z- = 3
 	xy+ = 4 x+y- = 5 --|-- x-y+ = 6 xy- = 7
@@ -46,4 +46,12 @@ public:
 	float fatigue;
 	float radioactivity;
 	float xp;
+};
+class playerentity:public entity{
+public:
+	bool owner;
+	std::string playername;
+	playerstats	stats;
+	
+	playerentity();
 };

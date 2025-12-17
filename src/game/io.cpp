@@ -1,5 +1,5 @@
 #include"io.h"
-#include "../libs/term.h"
+#include <tiny/term.h>
 #ifdef __MMX__
 __m64 		keys[4],changed[4];
 #elif defined(__SSE__) || defined(__SSE2__) || defined(__SSE3__) || defined(__SSSE3__) || defined(__SSE4_1__) || defined(__SSE4_2__) || defined(__AVX__) || defined(__AVX2__)

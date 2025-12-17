@@ -39,7 +39,7 @@ public:
 	short	world;
 	bool	paused;
 	std::vector<entity> entities;
-	entity				player;
+	playerentity				player;
 	playerstats			stats;
 	Camera3D			camera;
 	Camera3D			third;
